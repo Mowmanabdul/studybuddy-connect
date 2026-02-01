@@ -1,4 +1,4 @@
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -7,20 +7,30 @@ import {
   Eye,
   EyeOff,
   User,
-  BookOpen
+  BookOpen,
+  Loader2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useAuth, AppRole } from "@/hooks/useAuth";
+import { z } from "zod";
 
-type UserRole = "learner" | "tutor";
+// Validation schemas
+const emailSchema = z.string().email("Please enter a valid email address");
+const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
+const nameSchema = z.string().min(1, "This field is required");
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, role, signUp, signIn } = useAuth();
+  
   const [isSignup, setIsSignup] = useState(searchParams.get("signup") === "true");
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<UserRole>("learner");
+  const [selectedRole, setSelectedRole] = useState<AppRole>("learner");
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
   const [formData, setFormData] = useState({
     firstName: "",
@@ -29,28 +39,116 @@ const Auth = () => {
     password: "",
     grade: "10",
   });
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && role) {
+      const from = (location.state as { from?: Location })?.from?.pathname;
+      if (from) {
+        navigate(from, { replace: true });
+      } else if (role === "learner") {
+        navigate("/dashboard/learner", { replace: true });
+      } else if (role === "tutor") {
+        navigate("/dashboard/tutor", { replace: true });
+      }
+    }
+  }, [user, role, navigate, location.state]);
   
   useEffect(() => {
     setIsSignup(searchParams.get("signup") === "true");
   }, [searchParams]);
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    try {
+      emailSchema.parse(formData.email);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        newErrors.email = e.errors[0].message;
+      }
+    }
+
+    try {
+      passwordSchema.parse(formData.password);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        newErrors.password = e.errors[0].message;
+      }
+    }
+
+    if (isSignup) {
+      try {
+        nameSchema.parse(formData.firstName);
+      } catch (e) {
+        if (e instanceof z.ZodError) {
+          newErrors.firstName = e.errors[0].message;
+        }
+      }
+
+      try {
+        nameSchema.parse(formData.lastName);
+      } catch (e) {
+        if (e instanceof z.ZodError) {
+          newErrors.lastName = e.errors[0].message;
+        }
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) return;
+    
     setIsLoading(true);
     
-    // Simulate auth - replace with real auth when Cloud is connected
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast.success(isSignup ? "Account created! Welcome to Thuto AI." : "Welcome back!");
-    
-    // Navigate to appropriate dashboard
-    if (selectedRole === "learner") {
-      navigate("/dashboard/learner");
-    } else {
-      navigate("/dashboard/tutor");
+    try {
+      if (isSignup) {
+        const { error } = await signUp(
+          formData.email,
+          formData.password,
+          formData.firstName,
+          formData.lastName,
+          selectedRole,
+          formData.grade
+        );
+        
+        if (error) {
+          // Handle specific error cases
+          if (error.message.includes("already registered")) {
+            toast.error("This email is already registered. Please sign in instead.");
+          } else {
+            toast.error(error.message);
+          }
+          return;
+        }
+        
+        toast.success("Account created! Please check your email to verify your account.");
+      } else {
+        const { error } = await signIn(formData.email, formData.password);
+        
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            toast.error("Invalid email or password. Please try again.");
+          } else if (error.message.includes("Email not confirmed")) {
+            toast.error("Please verify your email before signing in.");
+          } else {
+            toast.error(error.message);
+          }
+          return;
+        }
+        
+        toast.success("Welcome back!");
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
   
   return (
@@ -125,8 +223,11 @@ const Auth = () => {
                     placeholder="John" 
                     value={formData.firstName}
                     onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                    required 
+                    className={errors.firstName ? "border-destructive" : ""}
                   />
+                  {errors.firstName && (
+                    <p className="text-xs text-destructive mt-1">{errors.firstName}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Last Name</label>
@@ -134,8 +235,11 @@ const Auth = () => {
                     placeholder="Doe" 
                     value={formData.lastName}
                     onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                    required 
+                    className={errors.lastName ? "border-destructive" : ""}
                   />
+                  {errors.lastName && (
+                    <p className="text-xs text-destructive mt-1">{errors.lastName}</p>
+                  )}
                 </div>
               </div>
             )}
@@ -147,8 +251,11 @@ const Auth = () => {
                 placeholder="john@example.com" 
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                required 
+                className={errors.email ? "border-destructive" : ""}
               />
+              {errors.email && (
+                <p className="text-xs text-destructive mt-1">{errors.email}</p>
+              )}
             </div>
             
             <div>
@@ -159,7 +266,7 @@ const Auth = () => {
                   placeholder="••••••••" 
                   value={formData.password}
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  required 
+                  className={errors.password ? "border-destructive" : ""}
                 />
                 <button
                   type="button"
@@ -169,6 +276,9 @@ const Auth = () => {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {errors.password && (
+                <p className="text-xs text-destructive mt-1">{errors.password}</p>
+              )}
             </div>
             
             {isSignup && selectedRole === "learner" && (
@@ -195,7 +305,10 @@ const Auth = () => {
               disabled={isLoading}
             >
               {isLoading ? (
-                "Please wait..."
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Please wait...
+                </>
               ) : (
                 <>
                   {isSignup ? "Create Account" : "Sign In"}

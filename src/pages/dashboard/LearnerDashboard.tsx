@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   GraduationCap, 
@@ -17,11 +17,12 @@ import {
   Settings,
   Bell
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const LearnerDashboard = () => {
-  const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
   
-  // Mock data - replace with real data from Supabase
+  // Mock data - replace with real data from database
   const upcomingSessions = [
     { id: 1, subject: "Mathematics", tutor: "Ms. Nkosi", date: "Today", time: "15:00", topic: "Quadratic Equations" },
     { id: 2, subject: "Physical Sciences", tutor: "Mr. Dlamini", date: "Tomorrow", time: "14:00", topic: "Newton's Laws" },
@@ -32,9 +33,12 @@ const LearnerDashboard = () => {
     { id: 2, subject: "Physical Sciences", score: 65, date: "1 week ago", topics: ["Mechanics", "Electricity"] },
   ];
   
-  const handleLogout = () => {
-    navigate("/");
+  const handleLogout = async () => {
+    await signOut();
   };
+  
+  const displayName = profile ? `${profile.first_name}` : "Learner";
+  const gradeDisplay = profile?.grade ? `Grade ${profile.grade}` : "";
   
   return (
     <div className="min-h-screen bg-muted/30">
@@ -60,8 +64,8 @@ const LearnerDashboard = () => {
                 <User className="w-5 h-5 text-primary-foreground" />
               </div>
               <div className="hidden sm:block">
-                <p className="text-sm font-semibold">Welcome, Learner</p>
-                <p className="text-xs text-muted-foreground">Grade 10</p>
+                <p className="text-sm font-semibold">Welcome, {displayName}</p>
+                <p className="text-xs text-muted-foreground">{gradeDisplay}</p>
               </div>
             </div>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
@@ -74,7 +78,7 @@ const LearnerDashboard = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold mb-2">Welcome back! 👋</h1>
+          <h1 className="font-display text-3xl font-bold mb-2">Welcome back, {displayName}! 👋</h1>
           <p className="text-muted-foreground">Ready to continue your learning journey?</p>
         </div>
         
