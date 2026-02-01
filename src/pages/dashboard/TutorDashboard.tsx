@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
@@ -20,12 +20,13 @@ import {
   Edit
 } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 const TutorDashboard = () => {
-  const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
   const [showFeedbackModal, setShowFeedbackModal] = useState<number | null>(null);
   
-  // Mock data - replace with real data from Supabase
+  // Mock data - replace with real data from database
   const upcomingSessions = [
     { id: 1, learner: "Thabo M.", grade: 10, subject: "Mathematics", date: "Today", time: "15:00", topic: "Quadratic Equations" },
     { id: 2, learner: "Naledi K.", grade: 11, subject: "Physical Sciences", date: "Today", time: "17:00", topic: "Electromagnetic Induction" },
@@ -44,9 +45,12 @@ const TutorDashboard = () => {
     earnings: "R4,800",
   };
   
-  const handleLogout = () => {
-    navigate("/");
+  const handleLogout = async () => {
+    await signOut();
   };
+  
+  const displayName = profile ? `${profile.first_name} ${profile.last_name}` : "Tutor";
+  const shortName = profile?.last_name ? `Ms. ${profile.last_name}` : "Tutor";
   
   return (
     <div className="min-h-screen bg-muted/30">
@@ -73,8 +77,8 @@ const TutorDashboard = () => {
                 <User className="w-5 h-5 text-primary-foreground" />
               </div>
               <div className="hidden sm:block">
-                <p className="text-sm font-semibold">Ms. Nkosi</p>
-                <p className="text-xs text-muted-foreground">Maths & Science Tutor</p>
+                <p className="text-sm font-semibold">{displayName}</p>
+                <p className="text-xs text-muted-foreground">Tutor</p>
               </div>
             </div>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
@@ -87,7 +91,7 @@ const TutorDashboard = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold mb-2">Good afternoon, Ms. Nkosi! 👋</h1>
+          <h1 className="font-display text-3xl font-bold mb-2">Good afternoon, {shortName}! 👋</h1>
           <p className="text-muted-foreground">You have {upcomingSessions.filter(s => s.date === "Today").length} sessions today</p>
         </div>
         
