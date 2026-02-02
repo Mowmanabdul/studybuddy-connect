@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   GraduationCap, 
@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const LearnerDashboard = () => {
   const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
   
   // Mock data - replace with real data from database
   const upcomingSessions = [
@@ -84,7 +85,10 @@ const LearnerDashboard = () => {
         
         {/* Quick Actions */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <button className="bg-gradient-hero text-primary-foreground rounded-2xl p-6 text-left hover:shadow-glow-coral transition-all hover:-translate-y-1">
+          <button 
+            onClick={() => navigate("/dashboard/diagnostic")}
+            className="bg-gradient-hero text-primary-foreground rounded-2xl p-6 text-left hover:shadow-glow-coral transition-all hover:-translate-y-1"
+          >
             <Brain className="w-8 h-8 mb-3" />
             <h3 className="font-semibold mb-1">Take Diagnostic</h3>
             <p className="text-sm text-primary-foreground/80">Test your knowledge</p>
@@ -203,7 +207,11 @@ const LearnerDashboard = () => {
                   </div>
                 ))}
                 
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate("/dashboard/diagnostic")}
+                >
                   <Brain className="w-4 h-4 mr-2" />
                   Take New Diagnostic
                 </Button>

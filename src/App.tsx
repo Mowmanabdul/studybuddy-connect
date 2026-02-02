@@ -12,6 +12,7 @@ import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
 import LearnerDashboard from "./pages/dashboard/LearnerDashboard";
 import TutorDashboard from "./pages/dashboard/TutorDashboard";
+import DiagnosticTest from "./pages/dashboard/DiagnosticTest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={["tutor"]}>
                   <TutorDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/diagnostic"
+              element={
+                <ProtectedRoute allowedRoles={["learner"]}>
+                  <DiagnosticTest />
                 </ProtectedRoute>
               }
             />

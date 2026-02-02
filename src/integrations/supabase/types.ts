@@ -14,6 +14,216 @@ export type Database = {
   }
   public: {
     Tables: {
+      diagnostic_answers: {
+        Row: {
+          answered_at: string
+          attempt_id: string
+          id: string
+          is_correct: boolean
+          question_id: string
+          selected_option_id: string
+          time_spent_seconds: number | null
+        }
+        Insert: {
+          answered_at?: string
+          attempt_id: string
+          id?: string
+          is_correct: boolean
+          question_id: string
+          selected_option_id: string
+          time_spent_seconds?: number | null
+        }
+        Update: {
+          answered_at?: string
+          attempt_id?: string
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+          selected_option_id?: string
+          time_spent_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diagnostic_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diagnostic_attempts: {
+        Row: {
+          completed_at: string | null
+          id: string
+          score: number | null
+          started_at: string
+          status: string
+          test_id: string
+          time_spent_seconds: number | null
+          total_questions: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          score?: number | null
+          started_at?: string
+          status?: string
+          test_id: string
+          time_spent_seconds?: number | null
+          total_questions?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          score?: number | null
+          started_at?: string
+          status?: string
+          test_id?: string
+          time_spent_seconds?: number | null
+          total_questions?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_attempts_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diagnostic_questions: {
+        Row: {
+          created_at: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          explanation: string | null
+          id: string
+          options: Json
+          order_index: number
+          question_text: string
+          test_id: string
+          topic: string
+        }
+        Insert: {
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          explanation?: string | null
+          id?: string
+          options: Json
+          order_index?: number
+          question_text: string
+          test_id: string
+          topic: string
+        }
+        Update: {
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          explanation?: string | null
+          id?: string
+          options?: Json
+          order_index?: number
+          question_text?: string
+          test_id?: string
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_questions_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diagnostic_recommendations: {
+        Row: {
+          attempt_id: string
+          created_at: string
+          id: string
+          overall_analysis: string
+          recommendations: Json
+          strengths: Json
+          study_plan: string | null
+          weaknesses: Json
+        }
+        Insert: {
+          attempt_id: string
+          created_at?: string
+          id?: string
+          overall_analysis: string
+          recommendations?: Json
+          strengths?: Json
+          study_plan?: string | null
+          weaknesses?: Json
+        }
+        Update: {
+          attempt_id?: string
+          created_at?: string
+          id?: string
+          overall_analysis?: string
+          recommendations?: Json
+          strengths?: Json
+          study_plan?: string | null
+          weaknesses?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_recommendations_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diagnostic_tests: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          grade: string
+          id: string
+          subject: string
+          title: string
+          total_questions: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          grade: string
+          id?: string
+          subject: string
+          title: string
+          total_questions?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          grade?: string
+          id?: string
+          subject?: string
+          title?: string
+          total_questions?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -93,6 +303,7 @@ export type Database = {
     }
     Enums: {
       app_role: "learner" | "tutor" | "admin"
+      difficulty_level: "easy" | "medium" | "hard"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -221,6 +432,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["learner", "tutor", "admin"],
+      difficulty_level: ["easy", "medium", "hard"],
     },
   },
 } as const
