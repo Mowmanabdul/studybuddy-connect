@@ -10,6 +10,7 @@ import HowItWorks from "./pages/HowItWorks";
 import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import LearnerDashboard from "./pages/dashboard/LearnerDashboard";
 import TutorDashboard from "./pages/dashboard/TutorDashboard";
 import DiagnosticTest from "./pages/dashboard/DiagnosticTest";
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route
               path="/dashboard/learner"
               element={

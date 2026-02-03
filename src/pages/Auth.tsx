@@ -24,7 +24,7 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, role, signUp, signIn } = useAuth();
+  const { user, profile, role, signUp, signIn } = useAuth();
   
   const [isSignup, setIsSignup] = useState(searchParams.get("signup") === "true");
   const [showPassword, setShowPassword] = useState(false);
@@ -43,19 +43,22 @@ const Auth = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
+      // Check if user needs onboarding
+      if (!profile || !role) {
+        navigate("/onboarding", { replace: true });
+        return;
+      }
+      
       const from = (location.state as { from?: Location })?.from?.pathname;
-      if (from) {
+      if (from && from !== "/onboarding") {
         navigate(from, { replace: true });
       } else if (role === "learner") {
         navigate("/dashboard/learner", { replace: true });
       } else if (role === "tutor") {
         navigate("/dashboard/tutor", { replace: true });
-      } else {
-        // Default redirect for users without a role (legacy users or incomplete signup)
-        navigate("/dashboard/learner", { replace: true });
       }
     }
-  }, [user, role, navigate, location.state]);
+  }, [user, profile, role, navigate, location.state]);
   
   useEffect(() => {
     setIsSignup(searchParams.get("signup") === "true");
