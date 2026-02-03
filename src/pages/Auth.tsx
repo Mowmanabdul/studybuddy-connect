@@ -42,7 +42,7 @@ const Auth = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user && role) {
+    if (user) {
       const from = (location.state as { from?: Location })?.from?.pathname;
       if (from) {
         navigate(from, { replace: true });
@@ -50,6 +50,9 @@ const Auth = () => {
         navigate("/dashboard/learner", { replace: true });
       } else if (role === "tutor") {
         navigate("/dashboard/tutor", { replace: true });
+      } else {
+        // Default redirect for users without a role (legacy users or incomplete signup)
+        navigate("/dashboard/learner", { replace: true });
       }
     }
   }, [user, role, navigate, location.state]);
