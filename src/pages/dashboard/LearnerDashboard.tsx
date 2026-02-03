@@ -100,7 +100,10 @@ const LearnerDashboard = () => {
             <p className="text-sm text-muted-foreground">Schedule tutoring</p>
           </button>
           
-          <button className="bg-card rounded-2xl p-6 text-left shadow-card hover:shadow-lg transition-all hover:-translate-y-1 border">
+          <button 
+            onClick={() => navigate("/dashboard/homework")}
+            className="bg-card rounded-2xl p-6 text-left shadow-card hover:shadow-lg transition-all hover:-translate-y-1 border"
+          >
             <MessageCircle className="w-8 h-8 mb-3 text-coral" />
             <h3 className="font-semibold mb-1">AI Homework Help</h3>
             <p className="text-sm text-muted-foreground">Get instant guidance</p>
@@ -233,7 +236,7 @@ const LearnerDashboard = () => {
                   Stuck on a problem? Get step-by-step guidance without the answer being revealed.
                 </p>
               </div>
-              <Button variant="hero">
+              <Button variant="hero" onClick={() => navigate("/dashboard/homework")}>
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Ask a Question
               </Button>
