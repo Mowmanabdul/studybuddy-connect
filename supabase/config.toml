@@ -2,3 +2,6 @@ project_id = "gwhjzqcxbmctxsmnfzpz"
 
 [functions.generate-recommendations]
 verify_jwt = false
+
+[functions.homework-helper]
+verify_jwt = false
