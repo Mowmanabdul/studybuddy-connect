@@ -23,6 +23,7 @@ interface AuthContextType {
   profile: Profile | null;
   role: AppRole | null;
   isLoading: boolean;
+  needsOnboarding: boolean;
   signUp: (
     email: string,
     password: string,
@@ -34,6 +35,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
+  refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -188,6 +190,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return role === checkRole;
   };
 
+  const refreshUserData = async () => {
+    if (user) {
+      await fetchUserData(user.id);
+    }
+  };
+
+  // User needs onboarding if authenticated but missing profile or role
+  const needsOnboarding = !!user && !isLoading && (!profile || !role);
+
   return (
     <AuthContext.Provider
       value={{
@@ -196,10 +207,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile,
         role,
         isLoading,
+        needsOnboarding,
         signUp,
         signIn,
         signOut,
         hasRole,
+        refreshUserData,
       }}
     >
       {children}

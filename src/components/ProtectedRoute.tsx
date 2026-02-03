@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, role, isLoading } = useAuth();
+  const { user, role, isLoading, needsOnboarding } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -22,6 +22,11 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   if (!user) {
     // Redirect to auth page, saving the attempted location
     return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  // Redirect to onboarding if profile/role is missing
+  if (needsOnboarding) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   // Check role-based access
