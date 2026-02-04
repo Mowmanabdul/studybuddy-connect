@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ const nameSchema = z.string().min(1, "This field is required");
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { user, refreshUserData } = useAuth();
+  const { user, profile, role, isLoading: authLoading, refreshUserData } = useAuth();
   
   const [step, setStep] = useState<"role" | "profile">("role");
   const [selectedRole, setSelectedRole] = useState<AppRole | null>(null);
@@ -32,6 +32,17 @@ const Onboarding = () => {
     grade: "10",
     bio: "",
   });
+
+  // If user already has profile and role, redirect to dashboard
+  useEffect(() => {
+    if (!authLoading && user && profile && role) {
+      if (role === "learner") {
+        navigate("/dashboard/learner", { replace: true });
+      } else if (role === "tutor") {
+        navigate("/dashboard/tutor", { replace: true });
+      }
+    }
+  }, [authLoading, user, profile, role, navigate]);
 
   const validateProfile = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -69,32 +80,55 @@ const Onboarding = () => {
     setIsLoading(true);
     
     try {
-      // Create profile
-      const { error: profileError } = await supabase.from("profiles").insert({
-        user_id: user.id,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        grade: selectedRole === "learner" ? formData.grade : null,
-        bio: selectedRole === "tutor" ? formData.bio : null,
-      });
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
 
-      if (profileError) throw profileError;
+      if (!existingProfile) {
+        // Create profile only if it doesn't exist
+        const { error: profileError } = await supabase.from("profiles").insert({
+          user_id: user.id,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          grade: selectedRole === "learner" ? formData.grade : null,
+          bio: selectedRole === "tutor" ? formData.bio : null,
+        });
 
-      // Create user role
-      const { error: roleError } = await supabase.from("user_roles").insert({
-        user_id: user.id,
-        role: selectedRole,
-      });
+        if (profileError && profileError.code !== "23505") {
+          throw profileError;
+        }
+      }
 
-      if (roleError) throw roleError;
+      // Check if role already exists
+      const { data: existingRole } = await supabase
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!existingRole) {
+        // Create user role only if it doesn't exist
+        const { error: roleError } = await supabase.from("user_roles").insert({
+          user_id: user.id,
+          role: selectedRole,
+        });
+
+        if (roleError && roleError.code !== "23505") {
+          throw roleError;
+        }
+      }
 
       // Refresh user data in auth context
       await refreshUserData();
       
-      toast.success("Profile created! Welcome to Thuto AI.");
+      toast.success("Welcome to Thuto AI!");
       
-      // Navigate to appropriate dashboard
-      if (selectedRole === "learner") {
+      // Navigate to appropriate dashboard based on existing or selected role
+      const finalRole = existingRole ? role : selectedRole;
+      if (finalRole === "learner") {
         navigate("/dashboard/learner", { replace: true });
       } else {
         navigate("/dashboard/tutor", { replace: true });
