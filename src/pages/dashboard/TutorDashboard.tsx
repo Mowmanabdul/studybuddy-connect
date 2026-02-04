@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
@@ -24,6 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const TutorDashboard = () => {
   const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
   const [showFeedbackModal, setShowFeedbackModal] = useState<number | null>(null);
   
   // Mock data - replace with real data from database
@@ -241,7 +242,7 @@ const TutorDashboard = () => {
             <div className="bg-card rounded-2xl shadow-card p-6 border">
               <h2 className="font-display text-lg font-bold mb-4">Quick Actions</h2>
               <div className="space-y-3">
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={() => navigate("/dashboard/availability")}>
                   <Calendar className="w-4 h-4 mr-2" />
                   Manage Availability
                 </Button>

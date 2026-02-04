@@ -94,7 +94,10 @@ const LearnerDashboard = () => {
             <p className="text-sm text-primary-foreground/80">Test your knowledge</p>
           </button>
           
-          <button className="bg-card rounded-2xl p-6 text-left shadow-card hover:shadow-lg transition-all hover:-translate-y-1 border">
+          <button 
+            onClick={() => navigate("/dashboard/book-session")}
+            className="bg-card rounded-2xl p-6 text-left shadow-card hover:shadow-lg transition-all hover:-translate-y-1 border"
+          >
             <Calendar className="w-8 h-8 mb-3 text-teal" />
             <h3 className="font-semibold mb-1">Book Session</h3>
             <p className="text-sm text-muted-foreground">Schedule tutoring</p>
@@ -166,7 +169,7 @@ const LearnerDashboard = () => {
                 <div className="text-center py-8 text-muted-foreground">
                   <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>No upcoming sessions</p>
-                  <Button variant="outline" size="sm" className="mt-4">
+                  <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/dashboard/book-session")}>
                     Book a Session
                   </Button>
                 </div>
