@@ -15,6 +15,8 @@ import LearnerDashboard from "./pages/dashboard/LearnerDashboard";
 import TutorDashboard from "./pages/dashboard/TutorDashboard";
 import DiagnosticTest from "./pages/dashboard/DiagnosticTest";
 import HomeworkHelper from "./pages/dashboard/HomeworkHelper";
+import BookSession from "./pages/dashboard/BookSession";
+import TutorAvailability from "./pages/dashboard/TutorAvailability";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +64,22 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={["learner"]}>
                   <HomeworkHelper />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/book-session"
+              element={
+                <ProtectedRoute allowedRoles={["learner"]}>
+                  <BookSession />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/availability"
+              element={
+                <ProtectedRoute allowedRoles={["tutor"]}>
+                  <TutorAvailability />
                 </ProtectedRoute>
               }
             />

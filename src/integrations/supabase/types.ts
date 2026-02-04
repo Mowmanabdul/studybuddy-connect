@@ -263,6 +263,84 @@ export type Database = {
         }
         Relationships: []
       }
+      session_bookings: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          id: string
+          learner_id: string
+          meeting_link: string | null
+          notes: string | null
+          scheduled_at: string
+          status: Database["public"]["Enums"]["session_status"]
+          subject: string
+          tutor_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          learner_id: string
+          meeting_link?: string | null
+          notes?: string | null
+          scheduled_at: string
+          status?: Database["public"]["Enums"]["session_status"]
+          subject: string
+          tutor_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          learner_id?: string
+          meeting_link?: string | null
+          notes?: string | null
+          scheduled_at?: string
+          status?: Database["public"]["Enums"]["session_status"]
+          subject?: string
+          tutor_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tutor_availability: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_active: boolean
+          start_time: string
+          subject: string
+          tutor_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_active?: boolean
+          start_time: string
+          subject: string
+          tutor_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          start_time?: string
+          subject?: string
+          tutor_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -304,6 +382,7 @@ export type Database = {
     Enums: {
       app_role: "learner" | "tutor" | "admin"
       difficulty_level: "easy" | "medium" | "hard"
+      session_status: "pending" | "confirmed" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -433,6 +512,7 @@ export const Constants = {
     Enums: {
       app_role: ["learner", "tutor", "admin"],
       difficulty_level: ["easy", "medium", "hard"],
+      session_status: ["pending", "confirmed", "completed", "cancelled"],
     },
   },
 } as const
