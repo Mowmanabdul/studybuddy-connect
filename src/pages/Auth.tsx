@@ -6,19 +6,16 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  User,
-  BookOpen,
   Loader2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { useAuth, AppRole } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
 
 // Validation schemas
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
-const nameSchema = z.string().min(1, "This field is required");
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -28,16 +25,12 @@ const Auth = () => {
   
   const [isSignup, setIsSignup] = useState(searchParams.get("signup") === "true");
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<AppRole>("learner");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
     email: "",
     password: "",
-    grade: "10",
   });
 
   // Redirect if already logged in
@@ -83,24 +76,6 @@ const Auth = () => {
       }
     }
 
-    if (isSignup) {
-      try {
-        nameSchema.parse(formData.firstName);
-      } catch (e) {
-        if (e instanceof z.ZodError) {
-          newErrors.firstName = e.errors[0].message;
-        }
-      }
-
-      try {
-        nameSchema.parse(formData.lastName);
-      } catch (e) {
-        if (e instanceof z.ZodError) {
-          newErrors.lastName = e.errors[0].message;
-        }
-      }
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -114,14 +89,7 @@ const Auth = () => {
     
     try {
       if (isSignup) {
-        const { error } = await signUp(
-          formData.email,
-          formData.password,
-          formData.firstName,
-          formData.lastName,
-          selectedRole,
-          formData.grade
-        );
+        const { error } = await signUp(formData.email, formData.password);
         
         if (error) {
           // Handle specific error cases
@@ -183,73 +151,8 @@ const Auth = () => {
             </p>
           </div>
           
-          {/* Role Selector (only for signup) */}
-          {isSignup && (
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-3">I am a...</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole("learner")}
-                  className={`p-4 rounded-xl border-2 transition-all ${
-                    selectedRole === "learner" 
-                      ? "border-coral bg-coral/10" 
-                      : "border-border hover:border-muted-foreground"
-                  }`}
-                >
-                  <User className={`w-6 h-6 mx-auto mb-2 ${selectedRole === "learner" ? "text-coral" : "text-muted-foreground"}`} />
-                  <p className="font-semibold text-sm">Learner</p>
-                  <p className="text-xs text-muted-foreground">Grades 8-12</p>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole("tutor")}
-                  className={`p-4 rounded-xl border-2 transition-all ${
-                    selectedRole === "tutor" 
-                      ? "border-teal bg-teal/10" 
-                      : "border-border hover:border-muted-foreground"
-                  }`}
-                >
-                  <BookOpen className={`w-6 h-6 mx-auto mb-2 ${selectedRole === "tutor" ? "text-teal" : "text-muted-foreground"}`} />
-                  <p className="font-semibold text-sm">Tutor</p>
-                  <p className="text-xs text-muted-foreground">Teach & earn</p>
-                </button>
-              </div>
-            </div>
-          )}
-          
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {isSignup && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium mb-2">First Name</label>
-                  <Input 
-                    placeholder="John" 
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                    className={errors.firstName ? "border-destructive" : ""}
-                  />
-                  {errors.firstName && (
-                    <p className="text-xs text-destructive mt-1">{errors.firstName}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Last Name</label>
-                  <Input 
-                    placeholder="Doe" 
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                    className={errors.lastName ? "border-destructive" : ""}
-                  />
-                  {errors.lastName && (
-                    <p className="text-xs text-destructive mt-1">{errors.lastName}</p>
-                  )}
-                </div>
-              </div>
-            )}
-            
             <div>
               <label className="block text-sm font-medium mb-2">Email</label>
               <Input 
@@ -286,23 +189,6 @@ const Auth = () => {
                 <p className="text-xs text-destructive mt-1">{errors.password}</p>
               )}
             </div>
-            
-            {isSignup && selectedRole === "learner" && (
-              <div>
-                <label className="block text-sm font-medium mb-2">Current Grade</label>
-                <select 
-                  className="w-full h-11 px-4 rounded-xl border bg-background text-foreground"
-                  value={formData.grade}
-                  onChange={(e) => setFormData({...formData, grade: e.target.value})}
-                >
-                  <option value="8">Grade 8</option>
-                  <option value="9">Grade 9</option>
-                  <option value="10">Grade 10</option>
-                  <option value="11">Grade 11</option>
-                  <option value="12">Grade 12</option>
-                </select>
-              </div>
-            )}
             
             <Button 
               type="submit" 
