@@ -1,5 +1,12 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   GraduationCap, 
   Calendar,
@@ -18,10 +25,12 @@ import {
   Bell
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { ProfileEditor } from "@/components/profile/ProfileEditor";
 
 const LearnerDashboard = () => {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   
   // Mock data - replace with real data from database
   const upcomingSessions = [
@@ -57,18 +66,25 @@ const LearnerDashboard = () => {
             <Button variant="ghost" size="icon">
               <Bell className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon">
-              <Settings className="w-5 h-5" />
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gradient-cool rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-sm font-semibold">Welcome, {displayName}</p>
-                <p className="text-xs text-muted-foreground">{gradeDisplay}</p>
-              </div>
-            </div>
+            <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
+              <DialogTrigger asChild>
+                <button className="flex items-center gap-3 hover:bg-muted rounded-lg px-2 py-1 transition-colors">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={profile?.avatar_url || undefined} />
+                    <AvatarFallback className="bg-gradient-cool text-primary-foreground">
+                      {profile ? `${profile.first_name[0]}${profile.last_name[0]}` : "??"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden sm:block text-left">
+                    <p className="text-sm font-semibold">Welcome, {displayName}</p>
+                    <p className="text-xs text-muted-foreground">{gradeDisplay}</p>
+                  </div>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl p-0 overflow-hidden">
+                <ProfileEditor onClose={() => setProfileDialogOpen(false)} />
+              </DialogContent>
+            </Dialog>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="w-4 h-4" />
             </Button>
