@@ -26,11 +26,7 @@ interface AuthContextType {
   needsOnboarding: boolean;
   signUp: (
     email: string,
-    password: string,
-    firstName: string,
-    lastName: string,
-    role: AppRole,
-    grade?: string
+    password: string
   ) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -115,16 +111,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (
     email: string,
-    password: string,
-    firstName: string,
-    lastName: string,
-    userRole: AppRole,
-    grade?: string
+    password: string
   ) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
 
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -134,26 +126,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error;
 
-      // If user was created (not just email confirmation sent)
-      if (data.user) {
-        // Create profile
-        const { error: profileError } = await supabase.from("profiles").insert({
-          user_id: data.user.id,
-          first_name: firstName,
-          last_name: lastName,
-          grade: userRole === "learner" ? grade : null,
-        });
-
-        if (profileError) throw profileError;
-
-        // Create user role
-        const { error: roleError } = await supabase.from("user_roles").insert({
-          user_id: data.user.id,
-          role: userRole,
-        });
-
-        if (roleError) throw roleError;
-      }
+      // Profile and role creation is handled by the onboarding flow
+      // after the user confirms their email and is authenticated
 
       return { error: null };
     } catch (error) {
