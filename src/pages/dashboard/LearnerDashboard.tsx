@@ -12,36 +12,24 @@ import {
   Calendar,
   Brain,
   MessageCircle,
-  FileText,
   BarChart3,
   Clock,
   ChevronRight,
-  Video,
   Sparkles,
   BookOpen,
   LogOut,
-  User,
-  Settings,
   Bell
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
+import { useLearnerDashboard } from "@/hooks/useLearnerDashboard";
+import { format, formatDistanceToNow } from "date-fns";
 
 const LearnerDashboard = () => {
-  const { profile, signOut } = useAuth();
+  const { profile, user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-  
-  // Mock data - replace with real data from database
-  const upcomingSessions = [
-    { id: 1, subject: "Mathematics", tutor: "Ms. Nkosi", date: "Today", time: "15:00", topic: "Quadratic Equations" },
-    { id: 2, subject: "Physical Sciences", tutor: "Mr. Dlamini", date: "Tomorrow", time: "14:00", topic: "Newton's Laws" },
-  ];
-  
-  const recentDiagnostics = [
-    { id: 1, subject: "Mathematics", score: 72, date: "2 days ago", topics: ["Algebra", "Geometry"] },
-    { id: 2, subject: "Physical Sciences", score: 65, date: "1 week ago", topics: ["Mechanics", "Electricity"] },
-  ];
+  const { upcomingSessions, recentDiagnostics, loading } = useLearnerDashboard(user?.id);
   
   const handleLogout = async () => {
     await signOut();
@@ -141,12 +129,18 @@ const LearnerDashboard = () => {
             <div className="bg-card rounded-2xl shadow-card p-6 border">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="font-display text-xl font-bold">Upcoming Sessions</h2>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard/book-session")}>
                   View All <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
               
-              {upcomingSessions.length > 0 ? (
+              {loading ? (
+                <div className="space-y-4">
+                  {[1, 2].map(i => (
+                    <div key={i} className="h-20 bg-muted/50 rounded-xl animate-pulse" />
+                  ))}
+                </div>
+              ) : upcomingSessions.length > 0 ? (
                 <div className="space-y-4">
                   {upcomingSessions.map((session) => (
                     <div 
@@ -162,22 +156,18 @@ const LearnerDashboard = () => {
                       </div>
                       
                       <div className="flex-1">
-                        <h4 className="font-semibold">{session.topic}</h4>
+                        <h4 className="font-semibold">{session.subject}</h4>
                         <p className="text-sm text-muted-foreground">
-                          {session.subject} • {session.tutor}
+                          with {session.tutor_name}
                         </p>
                       </div>
                       
                       <div className="text-right">
-                        <p className="font-semibold">{session.date}</p>
+                        <p className="font-semibold">{format(new Date(session.scheduled_at), "EEE, dd MMM")}</p>
                         <p className="text-sm text-muted-foreground flex items-center justify-end gap-1">
-                          <Clock className="w-3 h-3" /> {session.time}
+                          <Clock className="w-3 h-3" /> {format(new Date(session.scheduled_at), "HH:mm")}
                         </p>
                       </div>
-                      
-                      <Button variant="secondary" size="sm">
-                        <Video className="w-4 h-4 mr-1" /> Join
-                      </Button>
                     </div>
                   ))}
                 </div>
@@ -198,36 +188,52 @@ const LearnerDashboard = () => {
             <div className="bg-card rounded-2xl shadow-card p-6 border">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="font-display text-xl font-bold">Diagnostics</h2>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard/diagnostic")}>
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
               
               <div className="space-y-4">
-                {recentDiagnostics.map((diagnostic) => (
-                  <div 
-                    key={diagnostic.id}
-                    className="p-4 bg-muted/50 rounded-xl"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-sm">{diagnostic.subject}</h4>
-                      <span className={`text-sm font-bold ${
-                        diagnostic.score >= 70 ? "text-teal" : "text-coral"
-                      }`}>
-                        {diagnostic.score}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2 mb-2">
-                      <div 
-                        className={`h-2 rounded-full ${
-                          diagnostic.score >= 70 ? "bg-teal" : "bg-coral"
-                        }`}
-                        style={{ width: `${diagnostic.score}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">{diagnostic.date}</p>
+                {loading ? (
+                  [1, 2].map(i => (
+                    <div key={i} className="h-24 bg-muted/50 rounded-xl animate-pulse" />
+                  ))
+                ) : recentDiagnostics.length > 0 ? (
+                  recentDiagnostics.map((diagnostic) => {
+                    const percentage = diagnostic.total_questions > 0 
+                      ? Math.round((diagnostic.score / diagnostic.total_questions) * 100) 
+                      : 0;
+                    return (
+                      <div key={diagnostic.id} className="p-4 bg-muted/50 rounded-xl">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-semibold text-sm">{diagnostic.subject}</h4>
+                          <span className={`text-sm font-bold ${
+                            percentage >= 70 ? "text-teal" : "text-coral"
+                          }`}>
+                            {percentage}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-2 mb-2">
+                          <div 
+                            className={`h-2 rounded-full ${
+                              percentage >= 70 ? "bg-teal" : "bg-coral"
+                            }`}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {diagnostic.completed_at 
+                            ? formatDistanceToNow(new Date(diagnostic.completed_at), { addSuffix: true }) 
+                            : "Recently"}
+                        </p>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground text-sm">
+                    <p>No diagnostics completed yet</p>
                   </div>
-                ))}
+                )}
                 
                 <Button 
                   variant="outline" 
@@ -259,46 +265,6 @@ const LearnerDashboard = () => {
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Ask a Question
               </Button>
-            </div>
-          </div>
-        </div>
-        
-        {/* Session Summaries */}
-        <div className="mt-8">
-          <div className="bg-card rounded-2xl shadow-card p-6 border">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-xl font-bold">Recent Session Summaries</h2>
-              <Button variant="ghost" size="sm">
-                View All <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-            
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="p-4 bg-muted/50 rounded-xl">
-                <div className="flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-teal mt-1" />
-                  <div>
-                    <h4 className="font-semibold">Quadratic Functions</h4>
-                    <p className="text-sm text-muted-foreground mb-2">Mathematics • Yesterday</p>
-                    <p className="text-sm">
-                      Covered graphing parabolas, finding vertex and intercepts. Practice more on completing the square.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-4 bg-muted/50 rounded-xl">
-                <div className="flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-coral mt-1" />
-                  <div>
-                    <h4 className="font-semibold">Electric Circuits</h4>
-                    <p className="text-sm text-muted-foreground mb-2">Physical Sciences • 3 days ago</p>
-                    <p className="text-sm">
-                      Ohm's Law and series/parallel circuits. Strong understanding of concepts.
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
