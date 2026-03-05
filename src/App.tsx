@@ -17,6 +17,7 @@ import DiagnosticTest from "./pages/dashboard/DiagnosticTest";
 import HomeworkHelper from "./pages/dashboard/HomeworkHelper";
 import BookSession from "./pages/dashboard/BookSession";
 import TutorAvailability from "./pages/dashboard/TutorAvailability";
+import LearnerProgress from "./pages/dashboard/LearnerProgress";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
