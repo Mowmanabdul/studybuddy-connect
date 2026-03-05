@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
+import { LearnerDiagnostics } from "@/components/tutor/LearnerDiagnostics";
 
 const TutorDashboard = () => {
   const { profile, signOut } = useAuth();
@@ -253,6 +254,8 @@ const TutorDashboard = () => {
           
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Learner Diagnostic Results */}
+            <LearnerDiagnostics />
             {/* Quick Actions */}
             <div className="bg-card rounded-2xl shadow-card p-6 border">
               <h2 className="font-display text-lg font-bold mb-4">Quick Actions</h2>
