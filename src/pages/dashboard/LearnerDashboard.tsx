@@ -116,7 +116,10 @@ const LearnerDashboard = () => {
             <p className="text-sm text-muted-foreground">Get instant guidance</p>
           </button>
           
-          <button className="bg-card rounded-2xl p-6 text-left shadow-card hover:shadow-lg transition-all hover:-translate-y-1 border">
+          <button 
+            onClick={() => navigate("/dashboard/progress")}
+            className="bg-card rounded-2xl p-6 text-left shadow-card hover:shadow-lg transition-all hover:-translate-y-1 border"
+          >
             <BarChart3 className="w-8 h-8 mb-3 text-sunshine" />
             <h3 className="font-semibold mb-1">View Progress</h3>
             <p className="text-sm text-muted-foreground">Track your growth</p>

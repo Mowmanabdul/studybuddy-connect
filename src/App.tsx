@@ -17,6 +17,7 @@ import DiagnosticTest from "./pages/dashboard/DiagnosticTest";
 import HomeworkHelper from "./pages/dashboard/HomeworkHelper";
 import BookSession from "./pages/dashboard/BookSession";
 import TutorAvailability from "./pages/dashboard/TutorAvailability";
+import LearnerProgress from "./pages/dashboard/LearnerProgress";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -83,7 +84,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route
+              path="/dashboard/progress"
+              element={
+                <ProtectedRoute allowedRoles={["learner"]}>
+                  <LearnerProgress />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
