@@ -254,6 +254,8 @@ const TutorDashboard = () => {
           
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Learner Diagnostic Results */}
+            <LearnerDiagnostics />
             {/* Quick Actions */}
             <div className="bg-card rounded-2xl shadow-card p-6 border">
               <h2 className="font-display text-lg font-bold mb-4">Quick Actions</h2>
