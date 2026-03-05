@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
+import { LearnerDiagnostics } from "@/components/tutor/LearnerDiagnostics";
 
 const TutorDashboard = () => {
   const { profile, signOut } = useAuth();
