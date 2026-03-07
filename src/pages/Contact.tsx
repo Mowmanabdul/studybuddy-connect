@@ -47,6 +47,7 @@ const Contact = () => {
   
   return (
     <div className="min-h-screen">
+      <SEO title="Contact – Thuto AI" description="Get in touch with Thuto AI. Questions about tutoring, want to become a tutor, or need support? We'd love to hear from you." />
       <Navbar />
       
       <section className="pt-32 pb-16 relative overflow-hidden">
