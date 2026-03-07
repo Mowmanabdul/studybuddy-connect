@@ -1,56 +1,23 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 import { 
-  GraduationCap, 
   Sparkles, 
   BookOpen, 
-  Users, 
   ArrowRight,
   Brain,
   Target,
   MessageCircle,
   CheckCircle2,
   Star,
-  Zap
+  Zap,
+  Users
 } from "lucide-react";
-
-const Navbar = () => (
-  <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
-    <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-      <Link to="/" className="flex items-center gap-2">
-        <div className="w-10 h-10 bg-gradient-hero rounded-xl flex items-center justify-center">
-          <GraduationCap className="w-6 h-6 text-primary-foreground" />
-        </div>
-        <span className="font-display font-bold text-xl">Thuto AI</span>
-      </Link>
-      
-      <div className="hidden md:flex items-center gap-8">
-        <Link to="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
-          How It Works
-        </Link>
-        <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
-          Pricing
-        </Link>
-        <Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
-          Contact
-        </Link>
-      </div>
-      
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" asChild>
-          <Link to="/auth">Login</Link>
-        </Button>
-        <Button asChild>
-          <Link to="/auth?signup=true">Get Started</Link>
-        </Button>
-      </div>
-    </div>
-  </nav>
-);
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 const HeroSection = () => (
   <section className="relative min-h-screen pt-24 pb-16 overflow-hidden">
-    {/* Background decorations */}
     <div className="absolute inset-0 -z-10">
       <div className="absolute top-20 left-10 w-72 h-72 bg-coral/20 rounded-full blur-3xl animate-float" />
       <div className="absolute top-40 right-20 w-96 h-96 bg-teal/20 rounded-full blur-3xl animate-float-delayed" />
@@ -59,7 +26,6 @@ const HeroSection = () => (
     
     <div className="container mx-auto px-4">
       <div className="grid lg:grid-cols-2 gap-12 items-center">
-        {/* Left column - Text */}
         <div className="space-y-8 animate-fade-in">
           <div className="inline-flex items-center gap-2 bg-muted rounded-full px-4 py-2 text-sm font-medium">
             <Sparkles className="w-4 h-4 text-coral" />
@@ -89,7 +55,6 @@ const HeroSection = () => (
             </Button>
           </div>
           
-          {/* Social proof */}
           <div className="flex items-center gap-6 pt-4">
             <div className="flex -space-x-3">
               {[1, 2, 3, 4].map((i) => (
@@ -112,7 +77,6 @@ const HeroSection = () => (
           </div>
         </div>
         
-        {/* Right column - Illustration */}
         <div className="relative animate-fade-in-up">
           <div className="relative rounded-3xl overflow-hidden shadow-card bg-gradient-to-br from-coral/10 to-teal/10 p-8">
             <div className="aspect-video bg-muted rounded-2xl flex items-center justify-center">
@@ -124,7 +88,6 @@ const HeroSection = () => (
               </div>
             </div>
             
-            {/* Floating cards */}
             <div className="absolute -top-4 -right-4 bg-card rounded-2xl p-4 shadow-card animate-float">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-teal/20 rounded-xl flex items-center justify-center">
@@ -154,6 +117,13 @@ const HeroSection = () => (
     </div>
   </section>
 );
+
+const featureColorMap: Record<string, { bg: string; text: string }> = {
+  coral: { bg: "bg-coral/20", text: "text-coral" },
+  teal: { bg: "bg-teal/20", text: "text-teal" },
+  sunshine: { bg: "bg-sunshine/20", text: "text-sunshine" },
+  lavender: { bg: "bg-lavender/20", text: "text-lavender" },
+};
 
 const FeaturesSection = () => {
   const features = [
@@ -196,19 +166,22 @@ const FeaturesSection = () => {
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
-            <div 
-              key={feature.title}
-              className="group bg-card rounded-2xl p-6 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-2"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className={`w-14 h-14 rounded-2xl mb-4 flex items-center justify-center bg-${feature.color}/20`}>
-                <feature.icon className={`w-7 h-7 text-${feature.color}`} />
+          {features.map((feature, index) => {
+            const colors = featureColorMap[feature.color];
+            return (
+              <div 
+                key={feature.title}
+                className="group bg-card rounded-2xl p-6 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-2"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className={`w-14 h-14 rounded-2xl mb-4 flex items-center justify-center ${colors.bg}`}>
+                  <feature.icon className={`w-7 h-7 ${colors.text}`} />
+                </div>
+                <h3 className="font-display font-bold text-xl mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
               </div>
-              <h3 className="font-display font-bold text-xl mb-2">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
@@ -265,7 +238,7 @@ const SubjectsSection = () => (
         <div className="relative">
           <div className="bg-gradient-to-br from-coral/10 via-teal/10 to-sunshine/10 rounded-3xl p-8">
             <div className="grid grid-cols-2 gap-4">
-              {["Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Matric Prep"].map((grade, i) => (
+              {["Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Matric Prep"].map((grade) => (
                 <div 
                   key={grade}
                   className="bg-card rounded-2xl p-6 text-center shadow-soft hover:shadow-card transition-all hover:-translate-y-1"
@@ -286,7 +259,6 @@ const CTASection = () => (
   <section className="py-24">
     <div className="container mx-auto px-4">
       <div className="relative bg-gradient-hero rounded-3xl p-12 md:p-16 text-center overflow-hidden">
-        {/* Background shapes */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-0 left-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
           <div className="absolute bottom-0 right-0 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
@@ -311,59 +283,10 @@ const CTASection = () => (
   </section>
 );
 
-const Footer = () => (
-  <footer className="border-t bg-muted/30 py-12">
-    <div className="container mx-auto px-4">
-      <div className="grid md:grid-cols-4 gap-8">
-        <div className="space-y-4">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-hero rounded-xl flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <span className="font-display font-bold text-xl">Thuto AI</span>
-          </Link>
-          <p className="text-muted-foreground text-sm">
-            Empowering South African learners with AI-powered tutoring for Maths and Science.
-          </p>
-        </div>
-        
-        <div>
-          <h4 className="font-semibold mb-4">Platform</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/how-it-works" className="hover:text-foreground transition-colors">How It Works</Link></li>
-            <li><Link to="/pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
-            <li><Link to="/auth" className="hover:text-foreground transition-colors">Login</Link></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h4 className="font-semibold mb-4">Subjects</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>Mathematics</li>
-            <li>Physical Sciences</li>
-            <li>Grades 8-12</li>
-          </ul>
-        </div>
-        
-        <div>
-          <h4 className="font-semibold mb-4">Contact</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/contact" className="hover:text-foreground transition-colors">Contact Us</Link></li>
-            <li>support@thutoai.co.za</li>
-          </ul>
-        </div>
-      </div>
-      
-      <div className="border-t mt-12 pt-8 text-center text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} Thuto AI. All rights reserved.</p>
-      </div>
-    </div>
-  </footer>
-);
-
 const Index = () => {
   return (
     <div className="min-h-screen">
+      <SEO />
       <Navbar />
       <HeroSection />
       <FeaturesSection />
