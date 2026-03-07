@@ -286,7 +286,7 @@ const CTASection = () => (
 const Index = () => {
   return (
     <div className="min-h-screen">
-      <Navbar />
+      <SEO />
       <HeroSection />
       <FeaturesSection />
       <SubjectsSection />
