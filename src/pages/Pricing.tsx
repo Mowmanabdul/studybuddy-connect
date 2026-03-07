@@ -1,47 +1,13 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
-  GraduationCap, 
   Check, 
   ArrowRight,
-  Sparkles,
   Zap
 } from "lucide-react";
 import { useState } from "react";
-
-const Navbar = () => (
-  <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
-    <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-      <Link to="/" className="flex items-center gap-2">
-        <div className="w-10 h-10 bg-gradient-hero rounded-xl flex items-center justify-center">
-          <GraduationCap className="w-6 h-6 text-primary-foreground" />
-        </div>
-        <span className="font-display font-bold text-xl">Thuto AI</span>
-      </Link>
-      
-      <div className="hidden md:flex items-center gap-8">
-        <Link to="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
-          How It Works
-        </Link>
-        <Link to="/pricing" className="text-foreground font-medium">
-          Pricing
-        </Link>
-        <Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
-          Contact
-        </Link>
-      </div>
-      
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" asChild>
-          <Link to="/auth">Login</Link>
-        </Button>
-        <Button asChild>
-          <Link to="/auth?signup=true">Get Started</Link>
-        </Button>
-      </div>
-    </div>
-  </nav>
-);
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 const plans = [
   {
@@ -56,7 +22,6 @@ const plans = [
     ],
     cta: "Get Started Free",
     popular: false,
-    color: "muted",
   },
   {
     name: "Learner",
@@ -72,7 +37,6 @@ const plans = [
     ],
     cta: "Start Learning",
     popular: true,
-    color: "coral",
   },
   {
     name: "Achiever",
@@ -88,7 +52,6 @@ const plans = [
     ],
     cta: "Achieve More",
     popular: false,
-    color: "teal",
   },
 ];
 
@@ -99,7 +62,6 @@ const Pricing = () => {
     <div className="min-h-screen">
       <Navbar />
       
-      {/* Hero */}
       <section className="pt-32 pb-16 relative overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-20 right-20 w-72 h-72 bg-coral/20 rounded-full blur-3xl animate-float" />
@@ -121,7 +83,6 @@ const Pricing = () => {
             All prices in South African Rand (ZAR).
           </p>
           
-          {/* Toggle */}
           <div className="flex items-center justify-center gap-4 mb-12">
             <span className={`font-medium ${!isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
               Monthly
@@ -130,7 +91,7 @@ const Pricing = () => {
               onClick={() => setIsAnnual(!isAnnual)}
               className={`relative w-16 h-8 rounded-full transition-colors ${isAnnual ? 'bg-coral' : 'bg-muted'}`}
             >
-              <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-transform shadow-sm ${isAnnual ? 'left-9' : 'left-1'}`} />
+              <div className={`absolute top-1 w-6 h-6 bg-card rounded-full transition-transform shadow-sm ${isAnnual ? 'left-9' : 'left-1'}`} />
             </button>
             <span className={`font-medium ${isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
               Annually
@@ -142,7 +103,6 @@ const Pricing = () => {
         </div>
       </section>
       
-      {/* Plans */}
       <section className="pb-24">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -203,7 +163,6 @@ const Pricing = () => {
         </div>
       </section>
       
-      {/* FAQ teaser */}
       <section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-display text-2xl font-bold mb-4">Have Questions?</h2>
@@ -216,12 +175,7 @@ const Pricing = () => {
         </div>
       </section>
       
-      {/* Footer */}
-      <footer className="border-t bg-muted/30 py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Thuto AI. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer minimal />
     </div>
   );
 };

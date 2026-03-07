@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
-  GraduationCap, 
   ArrowRight,
   ClipboardCheck,
   Calendar,
@@ -9,42 +8,17 @@ import {
   MessageCircle,
   BarChart3,
   Sparkles,
-  ChevronRight
 } from "lucide-react";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
-const Navbar = () => (
-  <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
-    <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-      <Link to="/" className="flex items-center gap-2">
-        <div className="w-10 h-10 bg-gradient-hero rounded-xl flex items-center justify-center">
-          <GraduationCap className="w-6 h-6 text-primary-foreground" />
-        </div>
-        <span className="font-display font-bold text-xl">Thuto AI</span>
-      </Link>
-      
-      <div className="hidden md:flex items-center gap-8">
-        <Link to="/how-it-works" className="text-foreground font-medium">
-          How It Works
-        </Link>
-        <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
-          Pricing
-        </Link>
-        <Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
-          Contact
-        </Link>
-      </div>
-      
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" asChild>
-          <Link to="/auth">Login</Link>
-        </Button>
-        <Button asChild>
-          <Link to="/auth?signup=true">Get Started</Link>
-        </Button>
-      </div>
-    </div>
-  </nav>
-);
+const stepColorMap: Record<string, { bg: string; text: string }> = {
+  coral: { bg: "bg-coral/20", text: "text-coral" },
+  teal: { bg: "bg-teal/20", text: "text-teal" },
+  sunshine: { bg: "bg-sunshine/20", text: "text-sunshine" },
+  lavender: { bg: "bg-lavender/20", text: "text-lavender" },
+  mint: { bg: "bg-mint/20", text: "text-mint" },
+};
 
 const steps = [
   {
@@ -96,7 +70,6 @@ const HowItWorks = () => {
     <div className="min-h-screen">
       <Navbar />
       
-      {/* Hero */}
       <section className="pt-32 pb-16 relative overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-20 left-10 w-72 h-72 bg-coral/20 rounded-full blur-3xl animate-float" />
@@ -120,41 +93,39 @@ const HowItWorks = () => {
         </div>
       </section>
       
-      {/* Steps */}
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            {steps.map((step, index) => (
-              <div key={step.number} className="relative">
-                {/* Connector line */}
-                {index < steps.length - 1 && (
-                  <div className="absolute left-[39px] top-24 bottom-0 w-0.5 bg-border" />
-                )}
-                
-                <div className="flex gap-8 mb-12 group">
-                  {/* Number circle */}
-                  <div className="relative">
-                    <div className={`w-20 h-20 rounded-2xl bg-${step.color}/20 flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                      <step.icon className={`w-8 h-8 text-${step.color}`} />
-                    </div>
-                    <span className="absolute -top-2 -right-2 bg-foreground text-background text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
-                      {step.number}
-                    </span>
-                  </div>
+            {steps.map((step, index) => {
+              const colors = stepColorMap[step.color];
+              return (
+                <div key={step.number} className="relative">
+                  {index < steps.length - 1 && (
+                    <div className="absolute left-[39px] top-24 bottom-0 w-0.5 bg-border" />
+                  )}
                   
-                  {/* Content */}
-                  <div className="flex-1 pt-2">
-                    <h3 className="font-display text-2xl font-bold mb-2">{step.title}</h3>
-                    <p className="text-muted-foreground text-lg">{step.description}</p>
+                  <div className="flex gap-8 mb-12 group">
+                    <div className="relative">
+                      <div className={`w-20 h-20 rounded-2xl ${colors.bg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                        <step.icon className={`w-8 h-8 ${colors.text}`} />
+                      </div>
+                      <span className="absolute -top-2 -right-2 bg-foreground text-background text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
+                        {step.number}
+                      </span>
+                    </div>
+                    
+                    <div className="flex-1 pt-2">
+                      <h3 className="font-display text-2xl font-bold mb-2">{step.title}</h3>
+                      <p className="text-muted-foreground text-lg">{step.description}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
       
-      {/* CTA */}
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="bg-gradient-hero rounded-3xl p-12 text-center">
@@ -174,12 +145,7 @@ const HowItWorks = () => {
         </div>
       </section>
       
-      {/* Footer */}
-      <footer className="border-t bg-muted/30 py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Thuto AI. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer minimal />
     </div>
   );
 };

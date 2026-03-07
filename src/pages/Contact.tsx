@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  GraduationCap, 
   Mail,
   Phone,
   MapPin,
@@ -12,40 +11,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
-const Navbar = () => (
-  <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
-    <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-      <Link to="/" className="flex items-center gap-2">
-        <div className="w-10 h-10 bg-gradient-hero rounded-xl flex items-center justify-center">
-          <GraduationCap className="w-6 h-6 text-primary-foreground" />
-        </div>
-        <span className="font-display font-bold text-xl">Thuto AI</span>
-      </Link>
-      
-      <div className="hidden md:flex items-center gap-8">
-        <Link to="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
-          How It Works
-        </Link>
-        <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
-          Pricing
-        </Link>
-        <Link to="/contact" className="text-foreground font-medium">
-          Contact
-        </Link>
-      </div>
-      
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" asChild>
-          <Link to="/auth">Login</Link>
-        </Button>
-        <Button asChild>
-          <Link to="/auth?signup=true">Get Started</Link>
-        </Button>
-      </div>
-    </div>
-  </nav>
-);
+import { supabase } from "@/integrations/supabase/client";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,19 +22,32 @@ const Contact = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const formData = new FormData(e.currentTarget);
     
-    toast.success("Message sent! We'll get back to you soon.");
+    const { error } = await supabase.from("contact_submissions").insert({
+      first_name: formData.get("first_name") as string,
+      last_name: formData.get("last_name") as string,
+      email: formData.get("email") as string,
+      phone: (formData.get("phone") as string) || null,
+      user_type: formData.get("user_type") as string,
+      message: formData.get("message") as string,
+    });
+    
+    if (error) {
+      console.error("Contact form error:", error);
+      toast.error("Failed to send message. Please try again.");
+    } else {
+      toast.success("Message sent! We'll get back to you soon.");
+      (e.target as HTMLFormElement).reset();
+    }
+    
     setIsSubmitting(false);
-    (e.target as HTMLFormElement).reset();
   };
   
   return (
     <div className="min-h-screen">
       <Navbar />
       
-      {/* Hero */}
       <section className="pt-32 pb-16 relative overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-20 left-1/4 w-72 h-72 bg-teal/20 rounded-full blur-3xl animate-float" />
@@ -90,11 +71,9 @@ const Contact = () => {
         </div>
       </section>
       
-      {/* Contact Form & Info */}
       <section className="pb-24">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 max-w-5xl mx-auto">
-            {/* Contact Info */}
             <div className="space-y-8">
               <div>
                 <h2 className="font-display text-2xl font-bold mb-4">Contact Information</h2>
@@ -139,7 +118,6 @@ const Contact = () => {
                 </div>
               </div>
               
-              {/* Become a tutor */}
               <div className="bg-gradient-to-br from-coral/10 to-teal/10 rounded-2xl p-6">
                 <h3 className="font-display font-bold text-lg mb-2">Want to Become a Tutor?</h3>
                 <p className="text-muted-foreground text-sm mb-4">
@@ -152,7 +130,6 @@ const Contact = () => {
               </div>
             </div>
             
-            {/* Form */}
             <div className="bg-card rounded-3xl p-8 shadow-card">
               <h2 className="font-display text-2xl font-bold mb-6">Send Us a Message</h2>
               
@@ -160,27 +137,27 @@ const Contact = () => {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">First Name</label>
-                    <Input placeholder="John" required />
+                    <Input name="first_name" placeholder="John" required />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">Last Name</label>
-                    <Input placeholder="Doe" required />
+                    <Input name="last_name" placeholder="Doe" required />
                   </div>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium mb-2">Email</label>
-                  <Input type="email" placeholder="john@example.com" required />
+                  <Input name="email" type="email" placeholder="john@example.com" required />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium mb-2">Phone (Optional)</label>
-                  <Input type="tel" placeholder="+27 12 345 6789" />
+                  <Input name="phone" type="tel" placeholder="+27 12 345 6789" />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium mb-2">I am a...</label>
-                  <select className="w-full h-11 px-4 rounded-xl border bg-background text-foreground">
+                  <select name="user_type" className="w-full h-11 px-4 rounded-xl border bg-background text-foreground">
                     <option>Learner / Student</option>
                     <option>Parent</option>
                     <option>Prospective Tutor</option>
@@ -192,6 +169,7 @@ const Contact = () => {
                 <div>
                   <label className="block text-sm font-medium mb-2">Message</label>
                   <Textarea 
+                    name="message"
                     placeholder="How can we help you?" 
                     className="min-h-[120px]"
                     required
@@ -214,12 +192,7 @@ const Contact = () => {
         </div>
       </section>
       
-      {/* Footer */}
-      <footer className="border-t bg-muted/30 py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Thuto AI. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer minimal />
     </div>
   );
 };
