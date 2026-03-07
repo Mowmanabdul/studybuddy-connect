@@ -287,6 +287,7 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <SEO />
+      <Navbar />
       <HeroSection />
       <FeaturesSection />
       <SubjectsSection />
