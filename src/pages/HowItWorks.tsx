@@ -69,6 +69,7 @@ const steps = [
 const HowItWorks = () => {
   return (
     <div className="min-h-screen">
+      <SEO title="How It Works – Thuto AI" description="Learn how Thuto AI helps SA learners master Maths and Science in 6 simple steps with AI diagnostics and expert tutors." />
       <Navbar />
       
       <section className="pt-32 pb-16 relative overflow-hidden">

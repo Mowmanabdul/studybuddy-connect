@@ -61,6 +61,7 @@ const Pricing = () => {
   
   return (
     <div className="min-h-screen">
+      <SEO title="Pricing – Thuto AI" description="Affordable tutoring plans for SA learners. From free diagnostics to unlimited sessions. All prices in South African Rand." />
       <Navbar />
       
       <section className="pt-32 pb-16 relative overflow-hidden">
