@@ -88,7 +88,7 @@ const LearnerDashboard = () => {
         </div>
         
         {/* Quick Actions */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <button 
             onClick={() => navigate("/dashboard/diagnostic")}
             className="bg-gradient-hero text-primary-foreground rounded-2xl p-6 text-left hover:shadow-glow-coral transition-all hover:-translate-y-1"
@@ -96,6 +96,15 @@ const LearnerDashboard = () => {
             <Brain className="w-8 h-8 mb-3" />
             <h3 className="font-semibold mb-1">Take Diagnostic</h3>
             <p className="text-sm text-primary-foreground/80">Test your knowledge</p>
+          </button>
+          
+          <button 
+            onClick={() => navigate("/dashboard/quiz")}
+            className="bg-card rounded-2xl p-6 text-left shadow-card hover:shadow-lg transition-all hover:-translate-y-1 border"
+          >
+            <Zap className="w-8 h-8 mb-3 text-primary" />
+            <h3 className="font-semibold mb-1">Quick Quiz</h3>
+            <p className="text-sm text-muted-foreground">Adaptive practice</p>
           </button>
           
           <button 
