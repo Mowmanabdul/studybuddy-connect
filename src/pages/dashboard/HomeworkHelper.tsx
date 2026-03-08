@@ -2,17 +2,36 @@ import { useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { 
   GraduationCap, 
   ArrowLeft, 
   Sparkles, 
   RotateCcw,
-  MessageCircle
+  MessageCircle,
+  Lightbulb,
+  Target,
+  BookOpen
 } from "lucide-react";
 import { useHomeworkChat } from "@/hooks/useHomeworkChat";
 import { ChatMessage } from "@/components/homework/ChatMessage";
 import { ChatInput } from "@/components/homework/ChatInput";
 import { ChatSettings } from "@/components/homework/ChatSettings";
+
+const starterPrompts = {
+  Mathematics: [
+    "How do I solve quadratic equations?",
+    "Explain the difference between permutations and combinations",
+    "Help me understand trigonometric identities",
+    "What's the best way to approach word problems?",
+  ],
+  "Physical Sciences": [
+    "Explain Newton's laws of motion with examples",
+    "How do I balance chemical equations?",
+    "What's the difference between speed and velocity?",
+    "Help me understand electric circuits",
+  ],
+};
 
 const HomeworkHelper = () => {
   const {
@@ -38,6 +57,7 @@ const HomeworkHelper = () => {
   }, [messages]);
 
   const hasMessages = messages.length > 0;
+  const tutorName = subject === "Mathematics" ? "Thabo" : "Lerato";
 
   return (
     <div className="min-h-screen bg-muted/30 flex flex-col">
@@ -55,8 +75,17 @@ const HomeworkHelper = () => {
                 <GraduationCap className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
-                <span className="font-display font-bold text-lg">AI Homework Helper</span>
-                <p className="text-xs text-muted-foreground">Maths & Physical Sciences</p>
+                <div className="flex items-center gap-2">
+                  <span className="font-display font-bold text-lg">
+                    {hasMessages ? `Chat with ${tutorName}` : "AI Homework Helper"}
+                  </span>
+                  <Badge variant="secondary" className="text-xs">
+                    {mode === "guidance" ? "Guidance" : "Exam Prep"}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {subject} · Grade {grade}
+                </p>
               </div>
             </div>
           </div>
@@ -71,28 +100,94 @@ const HomeworkHelper = () => {
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-4 flex flex-col max-w-3xl">
-        {/* Settings - show prominently when no messages */}
+        {/* Welcome screen when no messages */}
         {!hasMessages && (
-          <div className="bg-card rounded-2xl shadow-card p-6 border mb-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-hero rounded-xl flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-primary-foreground" />
+          <div className="space-y-4 mb-4">
+            {/* Hero section */}
+            <div className="bg-card rounded-2xl shadow-card p-6 border">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 bg-gradient-hero rounded-2xl flex items-center justify-center">
+                  <Sparkles className="w-7 h-7 text-primary-foreground" />
+                </div>
+                <div>
+                  <h2 className="font-display text-xl font-bold">
+                    Hey there! I'm {tutorName} 👋
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Your personal {subject} tutor. Ask me anything!
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="font-display text-xl font-bold">How can I help you today?</h2>
-                <p className="text-sm text-muted-foreground">
-                  Select your subject, grade, and mode to get started
+              
+              <ChatSettings
+                subject={subject}
+                grade={grade}
+                mode={mode}
+                onSubjectChange={(s) => {
+                  setSubject(s);
+                  clearMessages();
+                }}
+                onGradeChange={setGrade}
+                onModeChange={setMode}
+              />
+            </div>
+
+            {/* Mode explanation cards */}
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div 
+                className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                  mode === "guidance" 
+                    ? "bg-primary/5 border-primary/30" 
+                    : "bg-card hover:bg-muted/50"
+                }`}
+                onClick={() => setMode("guidance")}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Lightbulb className={`w-5 h-5 ${mode === "guidance" ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className="font-semibold text-sm">Guidance Mode</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  I'll guide you to discover answers yourself through hints and questions
+                </p>
+              </div>
+              <div 
+                className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                  mode === "exam" 
+                    ? "bg-primary/5 border-primary/30" 
+                    : "bg-card hover:bg-muted/50"
+                }`}
+                onClick={() => setMode("exam")}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className={`w-5 h-5 ${mode === "exam" ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className="font-semibold text-sm">Exam Mode</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Direct explanations with model answers and exam tips
                 </p>
               </div>
             </div>
-            <ChatSettings
-              subject={subject}
-              grade={grade}
-              mode={mode}
-              onSubjectChange={setSubject}
-              onGradeChange={setGrade}
-              onModeChange={setMode}
-            />
+
+            {/* Starter prompts */}
+            <div className="bg-card rounded-xl p-4 border">
+              <div className="flex items-center gap-2 mb-3">
+                <BookOpen className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">Try asking about...</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {starterPrompts[subject].map((prompt) => (
+                  <Button
+                    key={prompt}
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-8"
+                    onClick={() => sendMessage(prompt)}
+                  >
+                    {prompt}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -126,16 +221,36 @@ const HomeworkHelper = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {messages.map((msg, i) => (
-                  <ChatMessage key={i} role={msg.role} content={msg.content} />
-                ))}
+                {messages.map((msg, i) => {
+                  const isLastAssistant = 
+                    msg.role === "assistant" && 
+                    i === messages.length - 1 && 
+                    !isLoading;
+                  
+                  return (
+                    <ChatMessage 
+                      key={i} 
+                      role={msg.role} 
+                      content={msg.content}
+                      showActions={isLastAssistant}
+                      onFollowUp={sendMessage}
+                    />
+                  );
+                })}
                 {isLoading && messages[messages.length - 1]?.role === "user" && (
                   <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-                      <div className="w-4 h-4 border-2 border-secondary-foreground border-t-transparent rounded-full animate-spin" />
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-secondary to-secondary/80 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-secondary-foreground animate-pulse" />
                     </div>
                     <div className="bg-muted rounded-2xl px-4 py-3">
-                      <p className="text-sm text-muted-foreground">Thinking...</p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-1">
+                          <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </div>
+                        <span className="text-sm text-muted-foreground">{tutorName} is thinking...</span>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -148,7 +263,7 @@ const HomeworkHelper = () => {
             <ChatInput
               onSend={sendMessage}
               isLoading={isLoading}
-              placeholder={`Ask about ${subject}...`}
+              placeholder={`Ask ${tutorName} about ${subject}...`}
             />
           </div>
         </div>
