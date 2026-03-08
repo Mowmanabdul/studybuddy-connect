@@ -93,6 +93,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/dashboard/quiz"
+              element={
+                <ProtectedRoute allowedRoles={["learner"]}>
+                  <AdaptiveQuiz />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
