@@ -110,6 +110,7 @@ export const useTutorDashboard = (userId: string | undefined) => {
         status: b.status,
         notes: b.notes,
         meeting_link: b.meeting_link,
+        tutor_notes: b.tutor_notes,
       };
     };
 
