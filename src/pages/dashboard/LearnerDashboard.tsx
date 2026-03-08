@@ -18,7 +18,8 @@ import {
   Sparkles,
   BookOpen,
   LogOut,
-  Bell
+  Bell,
+  Zap
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
