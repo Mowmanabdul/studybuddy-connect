@@ -61,7 +61,7 @@ const LearnerProgress = () => {
   const [topicData, setTopicData] = useState<TopicPerformance[]>([]);
   const [loading, setLoading] = useState(true);
   const [subjectFilter, setSubjectFilter] = useState<string>("all");
-  const [showAllTopics, setShowAllTopics] = useState(false);
+  
 
   useEffect(() => {
     if (!user) return;
