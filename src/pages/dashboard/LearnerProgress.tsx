@@ -17,6 +17,7 @@ import {
   BarChart3,
   Flame,
   AlertTriangle,
+  ChevronRight,
 } from "lucide-react";
 import {
   LineChart,
@@ -33,6 +34,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import GoalTracker from "@/components/progress/GoalTracker";
+import ActivityDetailDialog from "@/components/progress/ActivityDetailDialog";
 
 interface AttemptWithTest {
   id: string;
