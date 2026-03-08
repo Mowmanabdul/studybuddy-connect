@@ -10,6 +10,15 @@ interface UpcomingSession {
   status: string;
 }
 
+interface CompletedSession {
+  id: string;
+  subject: string;
+  tutor_name: string;
+  scheduled_at: string;
+  tutor_notes: string | null;
+  duration_minutes: number;
+}
+
 interface RecentDiagnostic {
   id: string;
   subject: string;
