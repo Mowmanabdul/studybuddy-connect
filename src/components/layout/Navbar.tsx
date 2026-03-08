@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Menu, X } from "lucide-react";
+import { GraduationCap, Menu, X, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
