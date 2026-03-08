@@ -213,5 +213,6 @@ export const useTutorDashboard = (userId: string | undefined) => {
     declineSession,
     addMeetingLink,
     completeSession,
+    saveTutorNotes,
   };
 };
