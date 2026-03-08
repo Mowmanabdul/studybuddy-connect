@@ -323,6 +323,86 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_answers: {
+        Row: {
+          answered_at: string
+          correct_option: string
+          id: string
+          is_correct: boolean
+          question_index: number
+          selected_option: string
+          session_id: string
+        }
+        Insert: {
+          answered_at?: string
+          correct_option: string
+          id?: string
+          is_correct: boolean
+          question_index: number
+          selected_option: string
+          session_id: string
+        }
+        Update: {
+          answered_at?: string
+          correct_option?: string
+          id?: string
+          is_correct?: boolean
+          question_index?: number
+          selected_option?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_answers_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          difficulty: string
+          grade: string
+          id: string
+          questions: Json
+          score: number | null
+          status: string
+          subject: string
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          difficulty?: string
+          grade: string
+          id?: string
+          questions?: Json
+          score?: number | null
+          status?: string
+          subject: string
+          total_questions?: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          difficulty?: string
+          grade?: string
+          id?: string
+          questions?: Json
+          score?: number | null
+          status?: string
+          subject?: string
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       session_bookings: {
         Row: {
           created_at: string
