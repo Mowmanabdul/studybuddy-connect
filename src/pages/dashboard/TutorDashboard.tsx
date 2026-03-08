@@ -45,6 +45,8 @@ const TutorDashboard = () => {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [meetingLinkInput, setMeetingLinkInput] = useState<Record<string, string>>({});
   const [showLinkInput, setShowLinkInput] = useState<string | null>(null);
+  const [notesInput, setNotesInput] = useState<Record<string, string>>({});
+  const [showNotesInput, setShowNotesInput] = useState<string | null>(null);
   
   const {
     upcomingSessions,
