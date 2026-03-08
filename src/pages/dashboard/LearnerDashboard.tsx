@@ -47,7 +47,7 @@ const LearnerDashboard = () => {
   const { profile, user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-  const { upcomingSessions, recentDiagnostics, streak, loading } = useLearnerDashboard(user?.id);
+  const { upcomingSessions, completedSessions, recentDiagnostics, streak, loading } = useLearnerDashboard(user?.id);
   
   const handleLogout = async () => {
     await signOut();
