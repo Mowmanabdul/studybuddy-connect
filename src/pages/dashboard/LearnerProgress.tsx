@@ -83,7 +83,7 @@ const LearnerProgress = () => {
     if (!user) return;
     setLoading(true);
 
-    const [attemptsRes, answersRes] = await Promise.all([
+    const [attemptsRes, answersRes, quizzesRes] = await Promise.all([
       supabase
         .from("diagnostic_attempts")
         .select(`*, diagnostic_tests (title, subject, grade)`)
@@ -99,10 +99,20 @@ const LearnerProgress = () => {
         `)
         .eq("diagnostic_attempts.user_id", user.id)
         .eq("diagnostic_attempts.status", "completed"),
+      supabase
+        .from("quiz_sessions")
+        .select("id, score, total_questions, completed_at, subject, difficulty")
+        .eq("user_id", user.id)
+        .eq("status", "completed")
+        .order("completed_at", { ascending: true }),
     ]);
 
     if (attemptsRes.data) {
       setAttempts(attemptsRes.data as AttemptWithTest[]);
+    }
+
+    if (quizzesRes.data) {
+      setQuizSessions(quizzesRes.data as QuizSession[]);
     }
 
     if (answersRes.data) {
