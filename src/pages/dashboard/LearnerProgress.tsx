@@ -399,24 +399,49 @@ const LearnerProgress = () => {
                     <TrendingUp className="w-4 h-4 text-primary" />
                     Score Trend
                   </CardTitle>
-                  <div className="flex gap-1.5 flex-wrap">
-                    <Badge
-                      variant={subjectFilter === "all" ? "default" : "outline"}
-                      className="cursor-pointer text-xs"
-                      onClick={() => setSubjectFilter("all")}
-                    >
-                      All
-                    </Badge>
-                    {subjects.map((s) => (
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex gap-1.5 flex-wrap">
                       <Badge
-                        key={s}
-                        variant={subjectFilter === s ? "default" : "outline"}
+                        variant={viewMode === "all" ? "default" : "outline"}
                         className="cursor-pointer text-xs"
-                        onClick={() => setSubjectFilter(s!)}
+                        onClick={() => setViewMode("all")}
                       >
-                        {s}
+                        All
                       </Badge>
-                    ))}
+                      <Badge
+                        variant={viewMode === "diagnostics" ? "default" : "outline"}
+                        className="cursor-pointer text-xs"
+                        onClick={() => setViewMode("diagnostics")}
+                      >
+                        Diagnostics
+                      </Badge>
+                      <Badge
+                        variant={viewMode === "quizzes" ? "default" : "outline"}
+                        className="cursor-pointer text-xs"
+                        onClick={() => setViewMode("quizzes")}
+                      >
+                        Quizzes
+                      </Badge>
+                    </div>
+                    <div className="flex gap-1.5 flex-wrap">
+                      <Badge
+                        variant={subjectFilter === "all" ? "secondary" : "outline"}
+                        className="cursor-pointer text-xs"
+                        onClick={() => setSubjectFilter("all")}
+                      >
+                        All Subjects
+                      </Badge>
+                      {allSubjects.map((s) => (
+                        <Badge
+                          key={s}
+                          variant={subjectFilter === s ? "secondary" : "outline"}
+                          className="cursor-pointer text-xs"
+                          onClick={() => setSubjectFilter(s)}
+                        >
+                          {s}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </CardHeader>
