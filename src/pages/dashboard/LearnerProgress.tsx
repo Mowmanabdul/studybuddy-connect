@@ -144,48 +144,89 @@ const LearnerProgress = () => {
       ? attempts
       : attempts.filter((a) => a.diagnostic_tests?.subject === subjectFilter);
 
-  const subjects = [...new Set(attempts.map((a) => a.diagnostic_tests?.subject).filter(Boolean))];
+  const filteredQuizzes =
+    subjectFilter === "all"
+      ? quizSessions
+      : quizSessions.filter((q) => q.subject === subjectFilter);
 
-  const trendData = filteredAttempts.map((a) => ({
+  const allSubjects = [
+    ...new Set([
+      ...attempts.map((a) => a.diagnostic_tests?.subject).filter(Boolean),
+      ...quizSessions.map((q) => q.subject).filter(Boolean),
+    ]),
+  ] as string[];
+
+  // Combined trend data from both diagnostics and quizzes
+  const diagnosticTrendData = viewMode !== "quizzes" ? filteredAttempts.map((a) => ({
     date: format(new Date(a.completed_at), "dd MMM"),
     score: Math.round(((a.score || 0) / (a.total_questions || 1)) * 100),
-    test: a.diagnostic_tests?.title || "",
-  }));
+    label: a.diagnostic_tests?.title || "Diagnostic",
+    type: "diagnostic" as const,
+    timestamp: new Date(a.completed_at).getTime(),
+  })) : [];
 
-  const subjectAvg = subjects.map((subject) => {
+  const quizTrendData = viewMode !== "diagnostics" ? filteredQuizzes.filter(q => q.completed_at).map((q) => ({
+    date: format(new Date(q.completed_at!), "dd MMM"),
+    score: Math.round(((q.score || 0) / (q.total_questions || 1)) * 100),
+    label: `${q.subject} Quiz`,
+    type: "quiz" as const,
+    timestamp: new Date(q.completed_at!).getTime(),
+  })) : [];
+
+  const trendData = [...diagnosticTrendData, ...quizTrendData]
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .map(({ date, score, label, type }) => ({ date, score, test: label, type }));
+
+  // Subject averages including both diagnostics and quizzes
+  const subjectAvg = allSubjects.map((subject) => {
     const subjectAttempts = attempts.filter((a) => a.diagnostic_tests?.subject === subject);
-    const avg =
-      subjectAttempts.reduce(
-        (sum, a) => sum + ((a.score || 0) / (a.total_questions || 1)) * 100,
-        0
-      ) / (subjectAttempts.length || 1);
-    return { subject: subject!, average: Math.round(avg), tests: subjectAttempts.length };
+    const subjectQuizzes = quizSessions.filter((q) => q.subject === subject);
+    
+    const diagAvg = subjectAttempts.length > 0
+      ? subjectAttempts.reduce((sum, a) => sum + ((a.score || 0) / (a.total_questions || 1)) * 100, 0) / subjectAttempts.length
+      : 0;
+    
+    const quizAvg = subjectQuizzes.length > 0
+      ? subjectQuizzes.reduce((sum, q) => sum + ((q.score || 0) / (q.total_questions || 1)) * 100, 0) / subjectQuizzes.length
+      : 0;
+    
+    const totalCount = subjectAttempts.length + subjectQuizzes.length;
+    const combinedAvg = totalCount > 0
+      ? (diagAvg * subjectAttempts.length + quizAvg * subjectQuizzes.length) / totalCount
+      : 0;
+    
+    return {
+      subject: subject!,
+      average: Math.round(combinedAvg),
+      tests: subjectAttempts.length,
+      quizzes: subjectQuizzes.length,
+    };
   });
 
   const totalTests = attempts.length;
-  const overallAvg =
-    totalTests > 0
-      ? Math.round(
-          attempts.reduce(
-            (sum, a) => sum + ((a.score || 0) / (a.total_questions || 1)) * 100,
-            0
-          ) / totalTests
-        )
-      : 0;
+  const totalQuizzes = quizSessions.length;
+  const totalActivities = totalTests + totalQuizzes;
 
-  const recentAvg =
-    attempts.length >= 3
-      ? Math.round(
-          attempts
-            .slice(-3)
-            .reduce(
-              (sum, a) => sum + ((a.score || 0) / (a.total_questions || 1)) * 100,
-              0
-            ) / 3
-        )
-      : overallAvg;
+  const allScores = [
+    ...attempts.map(a => ((a.score || 0) / (a.total_questions || 1)) * 100),
+    ...quizSessions.map(q => ((q.score || 0) / (q.total_questions || 1)) * 100),
+  ];
+  
+  const overallAvg = allScores.length > 0
+    ? Math.round(allScores.reduce((sum, s) => sum + s, 0) / allScores.length)
+    : 0;
+
+  const recentScores = allScores.slice(-5);
+  const recentAvg = recentScores.length > 0
+    ? Math.round(recentScores.reduce((sum, s) => sum + s, 0) / recentScores.length)
+    : overallAvg;
 
   const trend = recentAvg - overallAvg;
+
+  // Quiz-specific stats
+  const quizAvg = totalQuizzes > 0
+    ? Math.round(quizSessions.reduce((sum, q) => sum + ((q.score || 0) / (q.total_questions || 1)) * 100, 0) / totalQuizzes)
+    : 0;
 
   // Split topics into strengths (≥70%) and weaknesses (<70%), top 3 each
   const strengths = [...topicData].sort((a, b) => b.percentage - a.percentage).filter(t => t.percentage >= 50).slice(0, 3);
