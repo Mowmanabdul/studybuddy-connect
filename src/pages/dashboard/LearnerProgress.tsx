@@ -17,6 +17,7 @@ import {
   BarChart3,
   Flame,
   AlertTriangle,
+  ChevronRight,
 } from "lucide-react";
 import {
   LineChart,
@@ -33,6 +34,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import GoalTracker from "@/components/progress/GoalTracker";
+import ActivityDetailDialog from "@/components/progress/ActivityDetailDialog";
 
 interface AttemptWithTest {
   id: string;
@@ -73,6 +75,16 @@ const LearnerProgress = () => {
   const [loading, setLoading] = useState(true);
   const [subjectFilter, setSubjectFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"all" | "diagnostics" | "quizzes">("all");
+  const [selectedActivity, setSelectedActivity] = useState<{
+    id: string;
+    type: "diagnostic" | "quiz";
+    title: string;
+    date: Date;
+    score: number;
+    total: number;
+    time?: number | null;
+    difficulty?: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -561,7 +573,8 @@ const LearnerProgress = () => {
                         return (
                           <div
                             key={`${item.type}-${item.id}`}
-                            className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl"
+                            className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl cursor-pointer hover:bg-muted transition-colors"
+                            onClick={() => setSelectedActivity(item)}
                           >
                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                               item.type === "diagnostic" ? "bg-primary/10" : "bg-accent/10"
@@ -586,6 +599,7 @@ const LearnerProgress = () => {
                             >
                               {pct}%
                             </Badge>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
                           </div>
                         );
                       });
@@ -596,6 +610,12 @@ const LearnerProgress = () => {
           </div>
         )}
       </main>
+
+      <ActivityDetailDialog
+        activity={selectedActivity}
+        open={!!selectedActivity}
+        onOpenChange={(open) => !open && setSelectedActivity(null)}
+      />
     </div>
   );
 };
