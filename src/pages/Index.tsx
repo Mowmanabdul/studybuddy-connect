@@ -15,6 +15,10 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
+import { ScrollReveal } from "@/components/layout/ScrollReveal";
+import { AnimatedCounter } from "@/components/layout/AnimatedCounter";
+import { motion } from "framer-motion";
 
 const HeroSection = () => (
   <section className="relative min-h-screen pt-24 pb-16 overflow-hidden">
@@ -26,7 +30,12 @@ const HeroSection = () => (
     
     <div className="container mx-auto px-4">
       <div className="grid lg:grid-cols-2 gap-12 items-center">
-        <div className="space-y-8 animate-fade-in">
+        <motion.div 
+          className="space-y-8"
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
           <div className="inline-flex items-center gap-2 bg-muted rounded-full px-4 py-2 text-sm font-medium">
             <Sparkles className="w-4 h-4 text-coral" />
             <span>AI-Powered Learning for SA Learners</span>
@@ -75,9 +84,14 @@ const HeroSection = () => (
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
         
-        <div className="relative animate-fade-in-up">
+        <motion.div 
+          className="relative"
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
           <div className="relative rounded-3xl overflow-hidden shadow-card bg-gradient-to-br from-coral/10 to-teal/10 p-8">
             <div className="aspect-video bg-muted rounded-2xl flex items-center justify-center">
               <div className="text-center space-y-4">
@@ -88,7 +102,11 @@ const HeroSection = () => (
               </div>
             </div>
             
-            <div className="absolute -top-4 -right-4 bg-card rounded-2xl p-4 shadow-card animate-float">
+            <motion.div 
+              className="absolute -top-4 -right-4 bg-card rounded-2xl p-4 shadow-card"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-teal/20 rounded-xl flex items-center justify-center">
                   <CheckCircle2 className="w-5 h-5 text-teal" />
@@ -98,9 +116,13 @@ const HeroSection = () => (
                   <p className="text-xs text-muted-foreground">Score: 85%</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
             
-            <div className="absolute -bottom-4 -left-4 bg-card rounded-2xl p-4 shadow-card animate-float-delayed">
+            <motion.div 
+              className="absolute -bottom-4 -left-4 bg-card rounded-2xl p-4 shadow-card"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 4, delay: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-coral/20 rounded-xl flex items-center justify-center">
                   <Zap className="w-5 h-5 text-coral" />
@@ -110,9 +132,36 @@ const HeroSection = () => (
                   <p className="text-xs text-muted-foreground">Available 24/7</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
+      </div>
+    </div>
+  </section>
+);
+
+/* Stats Section */
+const StatsSection = () => (
+  <section className="py-16 border-y bg-card/50">
+    <div className="container mx-auto px-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        {[
+          { value: 500, suffix: "+", label: "Active Learners" },
+          { value: 50, suffix: "+", label: "Expert Tutors" },
+          { value: 95, suffix: "%", label: "Grade Improvement" },
+          { value: 10000, suffix: "+", label: "Sessions Completed" },
+        ].map((stat, i) => (
+          <ScrollReveal key={stat.label} delay={i * 0.1}>
+            <div>
+              <AnimatedCounter
+                value={stat.value}
+                suffix={stat.suffix}
+                className="font-display text-4xl md:text-5xl font-bold text-gradient-hero"
+              />
+              <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+            </div>
+          </ScrollReveal>
+        ))}
       </div>
     </div>
   </section>
@@ -156,30 +205,30 @@ const FeaturesSection = () => {
   return (
     <section className="py-24 bg-muted/50">
       <div className="container mx-auto px-4">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="font-display text-4xl md:text-5xl font-bold mb-4">
-            Everything You Need to <span className="text-gradient-hero">Succeed</span>
-          </h2>
-          <p className="text-lg text-muted-foreground">
-            A complete learning ecosystem designed to help South African learners achieve their academic goals.
-          </p>
-        </div>
+        <ScrollReveal>
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="font-display text-4xl md:text-5xl font-bold mb-4">
+              Everything You Need to <span className="text-gradient-hero">Succeed</span>
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              A complete learning ecosystem designed to help South African learners achieve their academic goals.
+            </p>
+          </div>
+        </ScrollReveal>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => {
             const colors = featureColorMap[feature.color];
             return (
-              <div 
-                key={feature.title}
-                className="group bg-card rounded-2xl p-6 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-2"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className={`w-14 h-14 rounded-2xl mb-4 flex items-center justify-center ${colors.bg}`}>
-                  <feature.icon className={`w-7 h-7 ${colors.text}`} />
+              <ScrollReveal key={feature.title} delay={index * 0.1}>
+                <div className="group bg-card rounded-2xl p-6 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-2 h-full">
+                  <div className={`w-14 h-14 rounded-2xl mb-4 flex items-center justify-center ${colors.bg} group-hover:scale-110 transition-transform`}>
+                    <feature.icon className={`w-7 h-7 ${colors.text}`} />
+                  </div>
+                  <h3 className="font-display font-bold text-xl mb-2">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.description}</p>
                 </div>
-                <h3 className="font-display font-bold text-xl mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
-              </div>
+              </ScrollReveal>
             );
           })}
         </div>
@@ -192,64 +241,67 @@ const SubjectsSection = () => (
   <section className="py-24">
     <div className="container mx-auto px-4">
       <div className="grid lg:grid-cols-2 gap-16 items-center">
-        <div className="space-y-8">
-          <h2 className="font-display text-4xl md:text-5xl font-bold">
-            Focused on What <span className="text-gradient-cool">Matters Most</span>
-          </h2>
-          <p className="text-lg text-muted-foreground">
-            We specialize in the two subjects that challenge South African learners the most – 
-            and the ones that open doors to STEM careers.
-          </p>
-          
-          <div className="space-y-4">
-            <div className="flex items-start gap-4 p-4 bg-card rounded-2xl shadow-soft">
-              <div className="w-12 h-12 bg-coral/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl">📐</span>
+        <ScrollReveal direction="left">
+          <div className="space-y-8">
+            <h2 className="font-display text-4xl md:text-5xl font-bold">
+              Focused on What <span className="text-gradient-cool">Matters Most</span>
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              We specialize in the two subjects that challenge South African learners the most – 
+              and the ones that open doors to STEM careers.
+            </p>
+            
+            <div className="space-y-4">
+              <div className="flex items-start gap-4 p-4 bg-card rounded-2xl shadow-soft group hover:shadow-card transition-all">
+                <div className="w-12 h-12 bg-coral/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                  <span className="text-2xl">📐</span>
+                </div>
+                <div>
+                  <h4 className="font-display font-bold text-lg">Mathematics</h4>
+                  <p className="text-muted-foreground">
+                    From algebra to calculus. Master problem-solving skills with step-by-step guidance.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4 className="font-display font-bold text-lg">Mathematics</h4>
-                <p className="text-muted-foreground">
-                  From algebra to calculus. Master problem-solving skills with step-by-step guidance.
-                </p>
+              
+              <div className="flex items-start gap-4 p-4 bg-card rounded-2xl shadow-soft group hover:shadow-card transition-all">
+                <div className="w-12 h-12 bg-teal/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                  <span className="text-2xl">⚛️</span>
+                </div>
+                <div>
+                  <h4 className="font-display font-bold text-lg">Physical Sciences</h4>
+                  <p className="text-muted-foreground">
+                    Physics and Chemistry combined. Understand concepts, not just formulas.
+                  </p>
+                </div>
               </div>
             </div>
             
-            <div className="flex items-start gap-4 p-4 bg-card rounded-2xl shadow-soft">
-              <div className="w-12 h-12 bg-teal/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl">⚛️</span>
-              </div>
-              <div>
-                <h4 className="font-display font-bold text-lg">Physical Sciences</h4>
-                <p className="text-muted-foreground">
-                  Physics and Chemistry combined. Understand concepts, not just formulas.
-                </p>
-              </div>
-            </div>
+            <Button variant="hero" size="lg" asChild>
+              <Link to="/auth?signup=true">
+                Start Learning Now
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </Button>
           </div>
-          
-          <Button variant="hero" size="lg" asChild>
-            <Link to="/auth?signup=true">
-              Start Learning Now
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-          </Button>
-        </div>
+        </ScrollReveal>
         
-        <div className="relative">
+        <ScrollReveal direction="right">
           <div className="bg-gradient-to-br from-coral/10 via-teal/10 to-sunshine/10 rounded-3xl p-8">
             <div className="grid grid-cols-2 gap-4">
-              {["Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Matric Prep"].map((grade) => (
-                <div 
+              {["Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Matric Prep"].map((grade, i) => (
+                <motion.div 
                   key={grade}
-                  className="bg-card rounded-2xl p-6 text-center shadow-soft hover:shadow-card transition-all hover:-translate-y-1"
+                  className="bg-card rounded-2xl p-6 text-center shadow-soft hover:shadow-card transition-all hover:-translate-y-1 cursor-default"
+                  whileHover={{ scale: 1.03 }}
                 >
                   <BookOpen className="w-8 h-8 mx-auto mb-2 text-coral" />
                   <p className="font-semibold">{grade}</p>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
     </div>
   </section>
@@ -285,37 +337,38 @@ const testimonials = [
 const TestimonialsSection = () => (
   <section className="py-24 bg-muted/50">
     <div className="container mx-auto px-4">
-      <div className="text-center max-w-2xl mx-auto mb-16">
-        <h2 className="font-display text-4xl md:text-5xl font-bold mb-4">
-          Learners Are <span className="text-gradient-cool">Loving It</span>
-        </h2>
-        <p className="text-lg text-muted-foreground">
-          Real results from real South African learners using Thuto AI.
-        </p>
-      </div>
+      <ScrollReveal>
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <h2 className="font-display text-4xl md:text-5xl font-bold mb-4">
+            Learners Are <span className="text-gradient-cool">Loving It</span>
+          </h2>
+          <p className="text-lg text-muted-foreground">
+            Real results from real South African learners using Thuto AI.
+          </p>
+        </div>
+      </ScrollReveal>
 
       <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-        {testimonials.map((t) => (
-          <div
-            key={t.name}
-            className="bg-card rounded-2xl p-6 shadow-card hover:shadow-lg transition-all hover:-translate-y-1"
-          >
-            <div className="flex items-center gap-1 mb-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Star key={i} className="w-4 h-4 fill-sunshine text-sunshine" />
-              ))}
-            </div>
-            <p className="text-sm text-foreground leading-relaxed mb-6">"{t.quote}"</p>
-            <div className="flex items-center justify-between pt-4 border-t border-border/50">
-              <div>
-                <p className="font-semibold text-sm">{t.name}</p>
-                <p className="text-xs text-muted-foreground">{t.grade} · {t.location}</p>
+        {testimonials.map((t, i) => (
+          <ScrollReveal key={t.name} delay={i * 0.15}>
+            <div className="bg-card rounded-2xl p-6 shadow-card hover:shadow-lg transition-all hover:-translate-y-1 h-full flex flex-col">
+              <div className="flex items-center gap-1 mb-4">
+                {[1, 2, 3, 4, 5].map((j) => (
+                  <Star key={j} className="w-4 h-4 fill-sunshine text-sunshine" />
+                ))}
               </div>
-              <span className="text-xs font-bold text-teal bg-teal/10 px-2.5 py-1 rounded-full">
-                {t.improvement}
-              </span>
+              <p className="text-sm text-foreground leading-relaxed mb-6 flex-1">"{t.quote}"</p>
+              <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                <div>
+                  <p className="font-semibold text-sm">{t.name}</p>
+                  <p className="text-xs text-muted-foreground">{t.grade} · {t.location}</p>
+                </div>
+                <span className="text-xs font-bold text-teal bg-teal/10 px-2.5 py-1 rounded-full">
+                  {t.improvement}
+                </span>
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
         ))}
       </div>
     </div>
@@ -325,27 +378,29 @@ const TestimonialsSection = () => (
 const CTASection = () => (
   <section className="py-24">
     <div className="container mx-auto px-4">
-      <div className="relative bg-gradient-hero rounded-3xl p-12 md:p-16 text-center overflow-hidden">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 left-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-          <div className="absolute bottom-0 right-0 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
+      <ScrollReveal>
+        <div className="relative bg-gradient-hero rounded-3xl p-12 md:p-16 text-center overflow-hidden">
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute top-0 left-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute bottom-0 right-0 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
+          </div>
+          
+          <h2 className="font-display text-3xl md:text-5xl font-bold text-primary-foreground mb-4">
+            Ready to Ace Your Exams?
+          </h2>
+          <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto mb-8">
+            Join hundreds of South African learners who are already improving their grades with Thuto AI.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button variant="hero-outline" size="xl" asChild>
+              <Link to="/auth?signup=true">
+                Get Started Free
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </Button>
+          </div>
         </div>
-        
-        <h2 className="font-display text-3xl md:text-5xl font-bold text-primary-foreground mb-4">
-          Ready to Ace Your Exams?
-        </h2>
-        <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto mb-8">
-          Join hundreds of South African learners who are already improving their grades with Thuto AI.
-        </p>
-        <div className="flex flex-wrap justify-center gap-4">
-          <Button variant="hero-outline" size="xl" asChild>
-            <Link to="/auth?signup=true">
-              Get Started Free
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-          </Button>
-        </div>
-      </div>
+      </ScrollReveal>
     </div>
   </section>
 );
@@ -356,11 +411,13 @@ const Index = () => {
       <SEO />
       <Navbar />
       <HeroSection />
+      <StatsSection />
       <FeaturesSection />
       <SubjectsSection />
       <TestimonialsSection />
       <CTASection />
       <Footer />
+      <WhatsAppButton />
     </div>
   );
 };
