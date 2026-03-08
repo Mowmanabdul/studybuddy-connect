@@ -517,7 +517,7 @@ const LearnerProgress = () => {
               <GoalTracker
                 userId={user.id}
                 subjectAverages={subjectAvg}
-                availableSubjects={subjects as string[]}
+                availableSubjects={allSubjects}
               />
             )}
 
