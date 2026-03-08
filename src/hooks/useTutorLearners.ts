@@ -61,32 +61,29 @@ export function useTutorLearners() {
         return;
       }
 
-      // Fetch profiles for these learners
-      const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
-        .select("user_id, first_name, last_name, grade, avatar_url")
-        .in("user_id", learnerIds);
+      // Fetch profiles and diagnostic attempts in parallel
+      const [profilesRes, attemptsRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("user_id, first_name, last_name, grade, avatar_url")
+          .in("user_id", learnerIds),
+        supabase
+          .from("diagnostic_attempts")
+          .select(`*, diagnostic_tests (title, subject, grade)`)
+          .in("user_id", learnerIds)
+          .eq("status", "completed")
+          .order("completed_at", { ascending: false }),
+      ]);
 
-      if (profilesError) throw profilesError;
+      if (profilesRes.error) throw profilesRes.error;
 
-      // Fetch diagnostic attempts for these learners
-      const { data: attempts, error: attemptsError } = await supabase
-        .from("diagnostic_attempts")
-        .select(`*, diagnostic_tests (title, subject, grade)`)
-        .in("user_id", learnerIds)
-        .eq("status", "completed")
-        .order("completed_at", { ascending: false });
-
-      if (attemptsError) throw attemptsError;
-
-      // Group by learner
-      const learnerMap: LearnerDiagnosticData[] = (profiles || []).map((profile) => ({
+      // Group by learner — include ALL learners, even those without diagnostics
+      const learnerMap: LearnerDiagnosticData[] = (profilesRes.data || []).map((profile) => ({
         profile,
-        attempts: (attempts || []).filter((a) => a.user_id === profile.user_id) as LearnerAttempt[],
+        attempts: (attemptsRes.data || []).filter((a) => a.user_id === profile.user_id) as LearnerAttempt[],
       }));
 
-      // Only include learners who have at least one completed attempt
-      setLearners(learnerMap.filter((l) => l.attempts.length > 0));
+      setLearners(learnerMap);
     } catch (error) {
       console.error("Error fetching learner diagnostic data:", error);
     } finally {
