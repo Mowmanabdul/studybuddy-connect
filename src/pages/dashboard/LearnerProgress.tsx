@@ -75,6 +75,16 @@ const LearnerProgress = () => {
   const [loading, setLoading] = useState(true);
   const [subjectFilter, setSubjectFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"all" | "diagnostics" | "quizzes">("all");
+  const [selectedActivity, setSelectedActivity] = useState<{
+    id: string;
+    type: "diagnostic" | "quiz";
+    title: string;
+    date: Date;
+    score: number;
+    total: number;
+    time?: number | null;
+    difficulty?: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!user) return;

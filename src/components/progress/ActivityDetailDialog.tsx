@@ -142,8 +142,8 @@ export default function ActivityDetailDialog({ activity, open, onOpenChange }: P
     if (answersRes.data) {
       setQuizAnswers(answersRes.data as QuizAnswer[]);
     }
-    if (sessionRes.data?.questions) {
-      setQuizQuestions(sessionRes.data.questions as QuizQuestion[]);
+    if (sessionRes.data?.questions && Array.isArray(sessionRes.data.questions)) {
+      setQuizQuestions(sessionRes.data.questions as unknown as QuizQuestion[]);
     }
     setLoading(false);
   };
