@@ -2,7 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import PageTransition from "@/components/layout/PageTransition";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
@@ -23,6 +25,88 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+        <Route path="/how-it-works" element={<PageTransition><HowItWorks /></PageTransition>} />
+        <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
+        <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+        <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+        <Route path="/onboarding" element={<PageTransition><Onboarding /></PageTransition>} />
+        <Route
+          path="/dashboard/learner"
+          element={
+            <ProtectedRoute allowedRoles={["learner"]}>
+              <PageTransition><LearnerDashboard /></PageTransition>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/tutor"
+          element={
+            <ProtectedRoute allowedRoles={["tutor"]}>
+              <PageTransition><TutorDashboard /></PageTransition>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/diagnostic"
+          element={
+            <ProtectedRoute allowedRoles={["learner"]}>
+              <PageTransition><DiagnosticTest /></PageTransition>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/homework"
+          element={
+            <ProtectedRoute allowedRoles={["learner"]}>
+              <PageTransition><HomeworkHelper /></PageTransition>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/book-session"
+          element={
+            <ProtectedRoute allowedRoles={["learner"]}>
+              <PageTransition><BookSession /></PageTransition>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/availability"
+          element={
+            <ProtectedRoute allowedRoles={["tutor"]}>
+              <PageTransition><TutorAvailability /></PageTransition>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/progress"
+          element={
+            <ProtectedRoute allowedRoles={["learner"]}>
+              <PageTransition><LearnerProgress /></PageTransition>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/quiz"
+          element={
+            <ProtectedRoute allowedRoles={["learner"]}>
+              <PageTransition><AdaptiveQuiz /></PageTransition>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -30,79 +114,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route
-              path="/dashboard/learner"
-              element={
-                <ProtectedRoute allowedRoles={["learner"]}>
-                  <LearnerDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/tutor"
-              element={
-                <ProtectedRoute allowedRoles={["tutor"]}>
-                  <TutorDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/diagnostic"
-              element={
-                <ProtectedRoute allowedRoles={["learner"]}>
-                  <DiagnosticTest />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/homework"
-              element={
-                <ProtectedRoute allowedRoles={["learner"]}>
-                  <HomeworkHelper />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/book-session"
-              element={
-                <ProtectedRoute allowedRoles={["learner"]}>
-                  <BookSession />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/availability"
-              element={
-                <ProtectedRoute allowedRoles={["tutor"]}>
-                  <TutorAvailability />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/progress"
-              element={
-                <ProtectedRoute allowedRoles={["learner"]}>
-                  <LearnerProgress />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/quiz"
-              element={
-                <ProtectedRoute allowedRoles={["learner"]}>
-                  <AdaptiveQuiz />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AnimatedRoutes />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
