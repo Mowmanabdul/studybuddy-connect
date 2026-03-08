@@ -29,6 +29,7 @@ interface RecentDiagnostic {
 
 export function useLearnerDashboard(userId: string | undefined) {
   const [upcomingSessions, setUpcomingSessions] = useState<UpcomingSession[]>([]);
+  const [completedSessions, setCompletedSessions] = useState<CompletedSession[]>([]);
   const [recentDiagnostics, setRecentDiagnostics] = useState<RecentDiagnostic[]>([]);
   const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
