@@ -15,8 +15,6 @@ import {
   Brain,
   BookOpen,
   BarChart3,
-  ChevronDown,
-  ChevronUp,
   Flame,
   AlertTriangle,
 } from "lucide-react";
@@ -63,7 +61,7 @@ const LearnerProgress = () => {
   const [topicData, setTopicData] = useState<TopicPerformance[]>([]);
   const [loading, setLoading] = useState(true);
   const [subjectFilter, setSubjectFilter] = useState<string>("all");
-  const [showAllTopics, setShowAllTopics] = useState(false);
+  
 
   useEffect(() => {
     if (!user) return;
@@ -405,54 +403,6 @@ const LearnerProgress = () => {
               </Card>
             )}
 
-            {/* Collapsible Topic Breakdown */}
-            {topicData.length > 0 && (
-              <Card className="rounded-2xl shadow-card">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-primary" />
-                    All Topics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {(showAllTopics ? topicData : topicData.slice(0, 5)).map((topic) => (
-                      <div key={topic.topic} className="flex items-center gap-3">
-                        <div className="w-32 sm:w-40 truncate text-sm">{topic.topic}</div>
-                        <div className="flex-1">
-                          <Progress value={topic.percentage} className="h-2" />
-                        </div>
-                        <span
-                          className={`text-xs font-semibold w-10 text-right ${
-                            topic.percentage >= 70
-                              ? "text-secondary"
-                              : topic.percentage >= 40
-                              ? "text-accent-foreground"
-                              : "text-destructive"
-                          }`}
-                        >
-                          {topic.percentage}%
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  {topicData.length > 5 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full mt-3 text-xs text-muted-foreground"
-                      onClick={() => setShowAllTopics(!showAllTopics)}
-                    >
-                      {showAllTopics ? (
-                        <>Show Less <ChevronUp className="w-3 h-3 ml-1" /></>
-                      ) : (
-                        <>Show All {topicData.length} Topics <ChevronDown className="w-3 h-3 ml-1" /></>
-                      )}
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            )}
 
             {/* Recent Tests — compact list, last 5 */}
             <Card className="rounded-2xl shadow-card">
