@@ -57,6 +57,7 @@ const TutorDashboard = () => {
     declineSession,
     addMeetingLink,
     completeSession,
+    saveTutorNotes,
   } = useTutorDashboard(user?.id);
   
   const handleLogout = async () => {
