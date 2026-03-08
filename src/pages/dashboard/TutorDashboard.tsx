@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +16,6 @@ import {
   Clock,
   Video,
   Users,
-  FileText,
   ChevronRight,
   BookOpen,
   LogOut,
@@ -22,18 +23,36 @@ import {
   Bell,
   CheckCircle2,
   TrendingUp,
+  Flame,
+  Link2,
+  Check,
+  X,
+  Timer,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
 import { LearnerDiagnostics } from "@/components/tutor/LearnerDiagnostics";
 import { useTutorDashboard } from "@/hooks/useTutorDashboard";
-import { format, formatDistanceToNow, isToday, isTomorrow } from "date-fns";
+import { format, isToday, isTomorrow, isPast } from "date-fns";
+import { motion } from "framer-motion";
 
 const TutorDashboard = () => {
   const { profile, user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-  const { upcomingSessions, recentSessions, stats, loading } = useTutorDashboard(user?.id);
+  const [meetingLinkInput, setMeetingLinkInput] = useState<Record<string, string>>({});
+  const [showLinkInput, setShowLinkInput] = useState<string | null>(null);
+  
+  const {
+    upcomingSessions,
+    recentSessions,
+    stats,
+    loading,
+    confirmSession,
+    declineSession,
+    addMeetingLink,
+    completeSession,
+  } = useTutorDashboard(user?.id);
   
   const handleLogout = async () => {
     await signOut();
@@ -50,6 +69,18 @@ const TutorDashboard = () => {
   };
 
   const todaySessions = upcomingSessions.filter((s) => isToday(new Date(s.scheduled_at)));
+  const pendingCount = upcomingSessions.filter((s) => s.status === "pending").length;
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  const handleSaveMeetingLink = (sessionId: string) => {
+    const link = meetingLinkInput[sessionId];
+    if (link?.trim()) {
+      addMeetingLink(sessionId, link.trim());
+      setShowLinkInput(null);
+    }
+  };
   
   return (
     <div className="min-h-screen bg-muted/30">
@@ -65,6 +96,9 @@ const TutorDashboard = () => {
           </Link>
           
           <div className="flex items-center gap-4">
+            {pendingCount > 0 && (
+              <Badge className="bg-coral text-primary-foreground">{pendingCount} pending</Badge>
+            )}
             <Button variant="ghost" size="icon">
               <Bell className="w-5 h-5" />
             </Button>
@@ -97,7 +131,7 @@ const TutorDashboard = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold mb-2">Welcome back, {shortName}! 👋</h1>
+          <h1 className="font-display text-3xl font-bold mb-2">{greeting}, {shortName}! 👋</h1>
           <p className="text-muted-foreground">
             {loading
               ? "Loading your schedule..."
@@ -108,64 +142,43 @@ const TutorDashboard = () => {
         </div>
         
         {/* Stats */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
           {loading ? (
-            [1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24 rounded-2xl" />)
+            [1, 2, 3, 4, 5, 6].map((i) => <Skeleton key={i} className="h-24 rounded-2xl" />)
           ) : (
             <>
-              <div className="bg-card rounded-2xl p-6 shadow-card border">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-coral/20 rounded-xl flex items-center justify-center">
-                    <Calendar className="w-6 h-6 text-coral" />
+              {[
+                { icon: Calendar, label: "Total Sessions", value: stats.totalSessions, color: "coral" },
+                { icon: TrendingUp, label: "This Month", value: stats.thisMonth, color: "teal" },
+                { icon: CheckCircle2, label: "Completed", value: stats.completedThisMonth, color: "sunshine" },
+                { icon: Clock, label: "Upcoming", value: stats.upcomingCount, color: "lavender" },
+                { icon: Timer, label: "Hours Tutored", value: stats.totalHours, color: "teal" },
+                { icon: Users, label: "Learners", value: stats.uniqueLearners, color: "coral" },
+              ].map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  className="bg-card rounded-2xl p-5 shadow-card border"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 bg-${stat.color}/20 rounded-xl flex items-center justify-center`}>
+                      <stat.icon className={`w-5 h-5 text-${stat.color}`} />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold leading-tight">{stat.value}</p>
+                      <p className="text-xs text-muted-foreground">{stat.label}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.totalSessions}</p>
-                    <p className="text-sm text-muted-foreground">Total Sessions</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-card rounded-2xl p-6 shadow-card border">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-teal/20 rounded-xl flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-teal" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.thisMonth}</p>
-                    <p className="text-sm text-muted-foreground">This Month</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-card rounded-2xl p-6 shadow-card border">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-sunshine/20 rounded-xl flex items-center justify-center">
-                    <CheckCircle2 className="w-6 h-6 text-sunshine" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.completedThisMonth}</p>
-                    <p className="text-sm text-muted-foreground">Completed</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-card rounded-2xl p-6 shadow-card border">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-lavender/20 rounded-xl flex items-center justify-center">
-                    <Clock className="w-6 h-6 text-lavender" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.upcomingCount}</p>
-                    <p className="text-sm text-muted-foreground">Upcoming</p>
-                  </div>
-                </div>
-              </div>
+                </motion.div>
+              ))}
             </>
           )}
         </div>
         
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Upcoming Sessions */}
+          {/* Upcoming Sessions with Actions */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-card rounded-2xl shadow-card p-6 border">
               <div className="flex items-center justify-between mb-6">
@@ -184,37 +197,91 @@ const TutorDashboard = () => {
                   {upcomingSessions.map((session) => (
                     <div 
                       key={session.id}
-                      className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl hover:bg-muted transition-colors"
+                      className={`p-4 rounded-xl border transition-colors ${
+                        session.status === "pending" 
+                          ? "bg-sunshine/5 border-sunshine/30" 
+                          : "bg-muted/50 border-transparent"
+                      }`}
                     >
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        session.subject === "Mathematics" ? "bg-coral/20" : "bg-teal/20"
-                      }`}>
-                        <BookOpen className={`w-6 h-6 ${
-                          session.subject === "Mathematics" ? "text-coral" : "text-teal"
-                        }`} />
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                          session.subject === "Mathematics" ? "bg-coral/20" : "bg-teal/20"
+                        }`}>
+                          <BookOpen className={`w-6 h-6 ${
+                            session.subject === "Mathematics" ? "text-coral" : "text-teal"
+                          }`} />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold truncate">{session.learner_name}</h4>
+                            <Badge variant={session.status === "pending" ? "outline" : "secondary"} className="text-xs shrink-0">
+                              {session.status === "pending" ? "⏳ Pending" : "✓ Confirmed"}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {session.grade ? `Grade ${session.grade} · ` : ""}{session.subject} · {session.duration_minutes}min
+                          </p>
+                        </div>
+                        
+                        <div className="text-right shrink-0">
+                          <p className="font-semibold text-sm">{formatSessionDate(session.scheduled_at)}</p>
+                          <p className="text-sm text-muted-foreground flex items-center justify-end gap-1">
+                            <Clock className="w-3 h-3" /> {format(new Date(session.scheduled_at), "HH:mm")}
+                          </p>
+                        </div>
                       </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold truncate">{session.learner_name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {session.grade ? `Grade ${session.grade} · ` : ""}{session.subject}
-                        </p>
+
+                      {/* Action buttons */}
+                      <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-border/50">
+                        {session.status === "pending" && (
+                          <>
+                            <Button size="sm" onClick={() => confirmSession(session.id)}>
+                              <Check className="w-3 h-3 mr-1" /> Confirm
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => declineSession(session.id)}>
+                              <X className="w-3 h-3 mr-1" /> Decline
+                            </Button>
+                          </>
+                        )}
+
+                        {session.status === "confirmed" && !session.meeting_link && (
+                          showLinkInput === session.id ? (
+                            <div className="flex gap-2 flex-1">
+                              <Input
+                                placeholder="Paste Zoom/Meet link..."
+                                value={meetingLinkInput[session.id] || ""}
+                                onChange={(e) => setMeetingLinkInput(prev => ({ ...prev, [session.id]: e.target.value }))}
+                                className="h-8 text-sm"
+                              />
+                              <Button size="sm" onClick={() => handleSaveMeetingLink(session.id)}>
+                                Save
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => setShowLinkInput(null)}>
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button size="sm" variant="outline" onClick={() => setShowLinkInput(session.id)}>
+                              <Link2 className="w-3 h-3 mr-1" /> Add Meeting Link
+                            </Button>
+                          )
+                        )}
+
+                        {session.meeting_link && (
+                          <Button size="sm" variant="secondary" asChild>
+                            <a href={session.meeting_link} target="_blank" rel="noopener noreferrer">
+                              <Video className="w-3 h-3 mr-1" /> Join Meeting
+                            </a>
+                          </Button>
+                        )}
+
+                        {session.status === "confirmed" && isPast(new Date(session.scheduled_at)) && (
+                          <Button size="sm" variant="outline" onClick={() => completeSession(session.id)}>
+                            <CheckCircle2 className="w-3 h-3 mr-1" /> Mark Complete
+                          </Button>
+                        )}
                       </div>
-                      
-                      <div className="text-right shrink-0">
-                        <p className="font-semibold text-sm">{formatSessionDate(session.scheduled_at)}</p>
-                        <p className="text-sm text-muted-foreground flex items-center justify-end gap-1">
-                          <Clock className="w-3 h-3" /> {format(new Date(session.scheduled_at), "HH:mm")}
-                        </p>
-                      </div>
-                      
-                      {session.meeting_link && (
-                        <Button variant="secondary" size="sm" asChild>
-                          <a href={session.meeting_link} target="_blank" rel="noopener noreferrer">
-                            <Video className="w-4 h-4 mr-1" /> Join
-                          </a>
-                        </Button>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -252,16 +319,16 @@ const TutorDashboard = () => {
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold truncate">{session.learner_name}</h4>
                         <p className="text-sm text-muted-foreground">
-                          {session.subject}
+                          {session.subject} · {session.duration_minutes}min
                         </p>
                       </div>
                       
                       <div className="text-right shrink-0">
                         <span className="flex items-center gap-1 text-sm text-teal font-medium">
-                          <CheckCircle2 className="w-4 h-4" /> Completed
+                          <CheckCircle2 className="w-4 h-4" /> Complete
                         </span>
                         <p className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(session.scheduled_at), { addSuffix: true })}
+                          {format(new Date(session.scheduled_at), "dd MMM")}
                         </p>
                       </div>
                     </div>
@@ -286,13 +353,9 @@ const TutorDashboard = () => {
                   <Calendar className="w-4 h-4 mr-2" />
                   Manage Availability
                 </Button>
-                <Button variant="outline" className="w-full justify-start" disabled>
+                <Button variant="outline" className="w-full justify-start" onClick={() => navigate("/dashboard/my-learners")}>
                   <Users className="w-4 h-4 mr-2" />
-                  View Learners
-                </Button>
-                <Button variant="outline" className="w-full justify-start" disabled>
-                  <FileText className="w-4 h-4 mr-2" />
-                  Session History
+                  View My Learners
                 </Button>
               </div>
             </div>
@@ -306,15 +369,21 @@ const TutorDashboard = () => {
                 <div className="space-y-3">
                   {todaySessions.length > 0 ? todaySessions.map((session) => (
                     <div key={session.id} className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-coral rounded-full" />
-                      <p className="text-sm">
-                        <span className="font-medium">{format(new Date(session.scheduled_at), "HH:mm")}</span>
-                        {" – "}
-                        {session.learner_name}
-                      </p>
+                      <div className={`w-2 h-2 rounded-full ${session.status === "pending" ? "bg-sunshine" : "bg-teal"}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm">
+                          <span className="font-medium">{format(new Date(session.scheduled_at), "HH:mm")}</span>
+                          {" – "}
+                          <span className="truncate">{session.learner_name}</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">{session.subject}</p>
+                      </div>
+                      {session.status === "pending" && (
+                        <Badge variant="outline" className="text-xs">Pending</Badge>
+                      )}
                     </div>
                   )) : (
-                    <p className="text-sm text-muted-foreground">No sessions today</p>
+                    <p className="text-sm text-muted-foreground">No sessions today. Enjoy your free time! 😎</p>
                   )}
                 </div>
               )}
