@@ -80,17 +80,23 @@ export function useLearnerDashboard(userId: string | undefined) {
           .not("completed_at", "is", null),
       ]);
 
-      if (sessionsRes.data) {
-        const tutorIds = [...new Set(sessionsRes.data.map(s => s.tutor_id))];
+      // Gather all tutor IDs from both upcoming and completed
+      const allTutorIds = new Set<string>();
+      for (const s of sessionsRes.data || []) allTutorIds.add(s.tutor_id);
+      for (const s of completedRes.data || []) allTutorIds.add(s.tutor_id);
+
+      let tutorMap = new Map<string, string>();
+      if (allTutorIds.size > 0) {
         const { data: tutorProfiles } = await supabase
           .from("profiles")
           .select("user_id, first_name, last_name")
-          .in("user_id", tutorIds);
-
-        const tutorMap = new Map(
+          .in("user_id", [...allTutorIds]);
+        tutorMap = new Map(
           (tutorProfiles || []).map(p => [p.user_id, `${p.first_name} ${p.last_name}`])
         );
+      }
 
+      if (sessionsRes.data) {
         setUpcomingSessions(
           sessionsRes.data.map(s => ({
             id: s.id,
@@ -99,6 +105,19 @@ export function useLearnerDashboard(userId: string | undefined) {
             scheduled_at: s.scheduled_at,
             notes: s.notes,
             status: s.status,
+          }))
+        );
+      }
+
+      if (completedRes.data) {
+        setCompletedSessions(
+          completedRes.data.map(s => ({
+            id: s.id,
+            subject: s.subject,
+            tutor_name: tutorMap.get(s.tutor_id) || "Tutor",
+            scheduled_at: s.scheduled_at,
+            tutor_notes: (s as any).tutor_notes || null,
+            duration_minutes: s.duration_minutes,
           }))
         );
       }
