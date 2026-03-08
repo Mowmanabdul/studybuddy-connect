@@ -15,8 +15,6 @@ import {
   Brain,
   BookOpen,
   BarChart3,
-  ChevronDown,
-  ChevronUp,
   Flame,
   AlertTriangle,
 } from "lucide-react";
