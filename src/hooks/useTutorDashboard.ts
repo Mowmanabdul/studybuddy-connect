@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface TutorSession {
   id: string;
@@ -19,6 +20,8 @@ interface TutorStats {
   thisMonth: number;
   completedThisMonth: number;
   upcomingCount: number;
+  totalHours: number;
+  uniqueLearners: number;
 }
 
 export const useTutorDashboard = (userId: string | undefined) => {
@@ -29,15 +32,12 @@ export const useTutorDashboard = (userId: string | undefined) => {
     thisMonth: 0,
     completedThisMonth: 0,
     upcomingCount: 0,
+    totalHours: 0,
+    uniqueLearners: 0,
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!userId) return;
-    fetchDashboardData();
-  }, [userId]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
 
@@ -46,8 +46,7 @@ export const useTutorDashboard = (userId: string | undefined) => {
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
 
-    const [upcomingRes, recentRes, allMonthRes, allTimeRes] = await Promise.all([
-      // Upcoming sessions
+    const [upcomingRes, recentRes, allMonthRes, allTimeRes, hoursRes] = await Promise.all([
       supabase
         .from("session_bookings")
         .select("*")
@@ -55,8 +54,7 @@ export const useTutorDashboard = (userId: string | undefined) => {
         .in("status", ["pending", "confirmed"])
         .gte("scheduled_at", now)
         .order("scheduled_at", { ascending: true })
-        .limit(5),
-      // Recent completed sessions
+        .limit(10),
       supabase
         .from("session_bookings")
         .select("*")
@@ -64,20 +62,23 @@ export const useTutorDashboard = (userId: string | undefined) => {
         .eq("status", "completed")
         .order("scheduled_at", { ascending: false })
         .limit(5),
-      // This month's sessions
       supabase
         .from("session_bookings")
         .select("id, status")
         .eq("tutor_id", userId)
         .gte("scheduled_at", startOfMonth.toISOString()),
-      // All-time count
       supabase
         .from("session_bookings")
-        .select("id", { count: "exact", head: true })
+        .select("id, learner_id", { count: "exact" })
         .eq("tutor_id", userId),
+      // Get total hours from completed sessions
+      supabase
+        .from("session_bookings")
+        .select("duration_minutes")
+        .eq("tutor_id", userId)
+        .eq("status", "completed"),
     ]);
 
-    // Collect all learner IDs from upcoming + recent
     const allBookings = [...(upcomingRes.data || []), ...(recentRes.data || [])];
     const learnerIds = [...new Set(allBookings.map((b) => b.learner_id))];
 
@@ -115,15 +116,87 @@ export const useTutorDashboard = (userId: string | undefined) => {
     setRecentSessions((recentRes.data || []).map(mapSession));
 
     const monthData = allMonthRes.data || [];
+    const totalMinutes = (hoursRes.data || []).reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+    const allLearnerIds = new Set((allTimeRes.data || []).map((b) => b.learner_id));
+    
     setStats({
       totalSessions: allTimeRes.count || 0,
       thisMonth: monthData.length,
       completedThisMonth: monthData.filter((s) => s.status === "completed").length,
       upcomingCount: (upcomingRes.data || []).length,
+      totalHours: Math.round(totalMinutes / 60),
+      uniqueLearners: allLearnerIds.size,
     });
 
     setLoading(false);
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetchDashboardData();
+  }, [userId, fetchDashboardData]);
+
+  const confirmSession = async (sessionId: string) => {
+    const { error } = await supabase
+      .from("session_bookings")
+      .update({ status: "confirmed" })
+      .eq("id", sessionId);
+    if (error) {
+      toast.error("Failed to confirm session");
+    } else {
+      toast.success("Session confirmed!");
+      fetchDashboardData();
+    }
   };
 
-  return { upcomingSessions, recentSessions, stats, loading, refetch: fetchDashboardData };
+  const declineSession = async (sessionId: string) => {
+    const { error } = await supabase
+      .from("session_bookings")
+      .update({ status: "cancelled" })
+      .eq("id", sessionId);
+    if (error) {
+      toast.error("Failed to decline session");
+    } else {
+      toast.success("Session declined");
+      fetchDashboardData();
+    }
+  };
+
+  const addMeetingLink = async (sessionId: string, link: string) => {
+    const { error } = await supabase
+      .from("session_bookings")
+      .update({ meeting_link: link })
+      .eq("id", sessionId);
+    if (error) {
+      toast.error("Failed to save meeting link");
+    } else {
+      toast.success("Meeting link saved!");
+      fetchDashboardData();
+    }
+  };
+
+  const completeSession = async (sessionId: string) => {
+    const { error } = await supabase
+      .from("session_bookings")
+      .update({ status: "completed" })
+      .eq("id", sessionId);
+    if (error) {
+      toast.error("Failed to mark session complete");
+    } else {
+      toast.success("Session marked as complete");
+      fetchDashboardData();
+    }
+  };
+
+  return {
+    upcomingSessions,
+    recentSessions,
+    stats,
+    loading,
+    refetch: fetchDashboardData,
+    confirmSession,
+    declineSession,
+    addMeetingLink,
+    completeSession,
+  };
 };
