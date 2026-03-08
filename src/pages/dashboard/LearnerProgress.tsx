@@ -48,6 +48,15 @@ interface AttemptWithTest {
   } | null;
 }
 
+interface QuizSession {
+  id: string;
+  score: number | null;
+  total_questions: number;
+  completed_at: string | null;
+  subject: string;
+  difficulty: string;
+}
+
 interface TopicPerformance {
   topic: string;
   correct: number;
@@ -59,10 +68,11 @@ const LearnerProgress = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [attempts, setAttempts] = useState<AttemptWithTest[]>([]);
+  const [quizSessions, setQuizSessions] = useState<QuizSession[]>([]);
   const [topicData, setTopicData] = useState<TopicPerformance[]>([]);
   const [loading, setLoading] = useState(true);
   const [subjectFilter, setSubjectFilter] = useState<string>("all");
-  
+  const [viewMode, setViewMode] = useState<"all" | "diagnostics" | "quizzes">("all");
 
   useEffect(() => {
     if (!user) return;
