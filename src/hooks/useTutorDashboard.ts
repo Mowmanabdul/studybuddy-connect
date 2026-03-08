@@ -190,6 +190,19 @@ export const useTutorDashboard = (userId: string | undefined) => {
     }
   };
 
+  const saveTutorNotes = async (sessionId: string, notes: string) => {
+    const { error } = await supabase
+      .from("session_bookings")
+      .update({ tutor_notes: notes } as any)
+      .eq("id", sessionId);
+    if (error) {
+      toast.error("Failed to save session notes");
+    } else {
+      toast.success("Session notes saved!");
+      fetchDashboardData();
+    }
+  };
+
   return {
     upcomingSessions,
     recentSessions,
