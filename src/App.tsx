@@ -18,6 +18,7 @@ import HomeworkHelper from "./pages/dashboard/HomeworkHelper";
 import BookSession from "./pages/dashboard/BookSession";
 import TutorAvailability from "./pages/dashboard/TutorAvailability";
 import LearnerProgress from "./pages/dashboard/LearnerProgress";
+import AdaptiveQuiz from "./pages/dashboard/AdaptiveQuiz";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -89,6 +90,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={["learner"]}>
                   <LearnerProgress />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/quiz"
+              element={
+                <ProtectedRoute allowedRoles={["learner"]}>
+                  <AdaptiveQuiz />
                 </ProtectedRoute>
               }
             />

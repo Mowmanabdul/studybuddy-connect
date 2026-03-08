@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.homework-helper]
 verify_jwt = false
+
+[functions.generate-quiz]
+verify_jwt = false
