@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   GraduationCap,
   ArrowLeft,
@@ -16,7 +15,10 @@ import {
   Brain,
   BookOpen,
   BarChart3,
-  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Flame,
+  AlertTriangle,
 } from "lucide-react";
 import {
   LineChart,
@@ -28,11 +30,6 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
 } from "recharts";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,6 +63,7 @@ const LearnerProgress = () => {
   const [topicData, setTopicData] = useState<TopicPerformance[]>([]);
   const [loading, setLoading] = useState(true);
   const [subjectFilter, setSubjectFilter] = useState<string>("all");
+  const [showAllTopics, setShowAllTopics] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -98,7 +96,6 @@ const LearnerProgress = () => {
       setAttempts(attemptsRes.data as AttemptWithTest[]);
     }
 
-    // Build topic performance
     if (answersRes.data) {
       const topicMap = new Map<string, { correct: number; total: number }>();
       for (const answer of answersRes.data as any[]) {
@@ -130,14 +127,12 @@ const LearnerProgress = () => {
 
   const subjects = [...new Set(attempts.map((a) => a.diagnostic_tests?.subject).filter(Boolean))];
 
-  // Chart data: score trend over time
   const trendData = filteredAttempts.map((a) => ({
     date: format(new Date(a.completed_at), "dd MMM"),
     score: Math.round(((a.score || 0) / (a.total_questions || 1)) * 100),
     test: a.diagnostic_tests?.title || "",
   }));
 
-  // Subject comparison
   const subjectAvg = subjects.map((subject) => {
     const subjectAttempts = attempts.filter((a) => a.diagnostic_tests?.subject === subject);
     const avg =
@@ -148,14 +143,6 @@ const LearnerProgress = () => {
     return { subject: subject!, average: Math.round(avg), tests: subjectAttempts.length };
   });
 
-  // Radar data (top 8 topics)
-  const radarData = topicData.slice(0, 8).map((t) => ({
-    topic: t.topic.length > 15 ? t.topic.substring(0, 15) + "…" : t.topic,
-    score: t.percentage,
-    fullMark: 100,
-  }));
-
-  // Stats
   const totalTests = attempts.length;
   const overallAvg =
     totalTests > 0
@@ -180,12 +167,13 @@ const LearnerProgress = () => {
       : overallAvg;
 
   const trend = recentAvg - overallAvg;
-  const bestTopic = topicData.length > 0 ? topicData.reduce((a, b) => (a.percentage > b.percentage ? a : b)) : null;
-  const weakestTopic = topicData.length > 0 ? topicData.reduce((a, b) => (a.percentage < b.percentage ? a : b)) : null;
+
+  // Split topics into strengths (≥70%) and weaknesses (<70%), top 3 each
+  const strengths = [...topicData].sort((a, b) => b.percentage - a.percentage).filter(t => t.percentage >= 50).slice(0, 3);
+  const weaknesses = [...topicData].sort((a, b) => a.percentage - b.percentage).filter(t => t.percentage < 70).slice(0, 3);
 
   return (
     <div className="min-h-screen bg-muted/30">
-      {/* Header */}
       <header className="bg-card border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard/learner")}>
@@ -196,20 +184,20 @@ const LearnerProgress = () => {
             <div className="w-8 h-8 bg-gradient-hero rounded-lg flex items-center justify-center">
               <GraduationCap className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-lg">Progress Tracker</span>
+            <span className="font-display font-bold text-lg">Progress</span>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
+      <main className="container mx-auto px-4 py-8 max-w-5xl">
         {loading ? (
           <div className="space-y-6">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-28 rounded-2xl" />
+            <div className="grid sm:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-24 rounded-2xl" />
               ))}
             </div>
-            <Skeleton className="h-80 rounded-2xl" />
+            <Skeleton className="h-72 rounded-2xl" />
           </div>
         ) : totalTests === 0 ? (
           <div className="text-center py-20">
@@ -224,96 +212,126 @@ const LearnerProgress = () => {
             </Button>
           </div>
         ) : (
-          <div className="space-y-8">
-            {/* Stats Row */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-6">
+            {/* Compact Stats */}
+            <div className="grid sm:grid-cols-3 gap-4">
               <Card className="rounded-2xl shadow-card">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-coral/20 rounded-xl flex items-center justify-center">
-                      <Brain className="w-6 h-6 text-coral" />
+                <CardContent className="pt-5 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                      <Brain className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{totalTests}</p>
-                      <p className="text-sm text-muted-foreground">Tests Taken</p>
+                      <p className="text-2xl font-bold leading-tight">{totalTests}</p>
+                      <p className="text-xs text-muted-foreground">Tests Completed</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="rounded-2xl shadow-card">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-teal/20 rounded-xl flex items-center justify-center">
-                      <Target className="w-6 h-6 text-teal" />
+                <CardContent className="pt-5 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center shrink-0">
+                      <Target className="w-5 h-5 text-secondary" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{overallAvg}%</p>
-                      <p className="text-sm text-muted-foreground">Overall Average</p>
+                      <p className="text-2xl font-bold leading-tight">{overallAvg}%</p>
+                      <p className="text-xs text-muted-foreground">Overall Average</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="rounded-2xl shadow-card">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-sunshine/20 rounded-xl flex items-center justify-center">
+                <CardContent className="pt-5 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${trend >= 0 ? "bg-secondary/10" : "bg-destructive/10"}`}>
                       {trend >= 0 ? (
-                        <TrendingUp className="w-6 h-6 text-sunshine" />
+                        <TrendingUp className="w-5 h-5 text-secondary" />
                       ) : (
-                        <TrendingDown className="w-6 h-6 text-destructive" />
+                        <TrendingDown className="w-5 h-5 text-destructive" />
                       )}
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">
-                        {trend >= 0 ? "+" : ""}
-                        {trend}%
+                      <p className="text-2xl font-bold leading-tight">
+                        {trend >= 0 ? "+" : ""}{trend}%
                       </p>
-                      <p className="text-sm text-muted-foreground">Recent Trend</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-2xl shadow-card">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-lavender/20 rounded-xl flex items-center justify-center">
-                      <Trophy className="w-6 h-6 text-lavender" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold truncate max-w-[120px]">
-                        {bestTopic?.topic || "—"}
-                      </p>
-                      <p className="text-sm text-muted-foreground">Strongest Topic</p>
+                      <p className="text-xs text-muted-foreground">Recent Trend</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Score Trend Chart */}
+            {/* Strengths & Weaknesses — compact highlight */}
+            {(strengths.length > 0 || weaknesses.length > 0) && (
+              <div className="grid sm:grid-cols-2 gap-4">
+                {strengths.length > 0 && (
+                  <Card className="rounded-2xl shadow-card border-secondary/20">
+                    <CardContent className="pt-5 pb-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Flame className="w-4 h-4 text-secondary" />
+                        <span className="text-sm font-semibold text-secondary">Strengths</span>
+                      </div>
+                      <div className="space-y-2">
+                        {strengths.map((t) => (
+                          <div key={t.topic} className="flex items-center justify-between gap-2">
+                            <span className="text-sm truncate">{t.topic}</span>
+                            <Badge variant="secondary" className="shrink-0 text-xs bg-secondary/10 text-secondary border-0">
+                              {t.percentage}%
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {weaknesses.length > 0 && (
+                  <Card className="rounded-2xl shadow-card border-destructive/20">
+                    <CardContent className="pt-5 pb-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <AlertTriangle className="w-4 h-4 text-destructive" />
+                        <span className="text-sm font-semibold text-destructive">Needs Work</span>
+                      </div>
+                      <div className="space-y-2">
+                        {weaknesses.map((t) => (
+                          <div key={t.topic} className="flex items-center justify-between gap-2">
+                            <span className="text-sm truncate">{t.topic}</span>
+                            <Badge variant="outline" className="shrink-0 text-xs text-destructive border-destructive/30">
+                              {t.percentage}%
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+
+            {/* Score Trend */}
             <Card className="rounded-2xl shadow-card">
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-primary" />
+              <CardHeader className="pb-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-primary" />
                     Score Trend
                   </CardTitle>
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex gap-1.5 flex-wrap">
                     <Badge
                       variant={subjectFilter === "all" ? "default" : "outline"}
-                      className="cursor-pointer"
+                      className="cursor-pointer text-xs"
                       onClick={() => setSubjectFilter("all")}
                     >
-                      All Subjects
+                      All
                     </Badge>
                     {subjects.map((s) => (
                       <Badge
                         key={s}
                         variant={subjectFilter === s ? "default" : "outline"}
-                        className="cursor-pointer"
+                        className="cursor-pointer text-xs"
                         onClick={() => setSubjectFilter(s!)}
                       >
                         {s}
@@ -324,17 +342,17 @@ const LearnerProgress = () => {
               </CardHeader>
               <CardContent>
                 {trendData.length > 1 ? (
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={240}>
                     <LineChart data={trendData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                      <YAxis domain={[0, 100]} stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                      <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                      <YAxis domain={[0, 100]} stroke="hsl(var(--muted-foreground))" fontSize={11} />
                       <Tooltip
                         contentStyle={{
                           backgroundColor: "hsl(var(--card))",
                           border: "1px solid hsl(var(--border))",
                           borderRadius: "0.75rem",
-                          fontSize: 13,
+                          fontSize: 12,
                         }}
                         formatter={(value: number, _name: string, props: any) => [
                           `${value}%`,
@@ -345,184 +363,129 @@ const LearnerProgress = () => {
                         type="monotone"
                         dataKey="score"
                         stroke="hsl(var(--primary))"
-                        strokeWidth={3}
-                        dot={{ r: 5, fill: "hsl(var(--primary))", strokeWidth: 2, stroke: "hsl(var(--card))" }}
-                        activeDot={{ r: 7 }}
+                        strokeWidth={2.5}
+                        dot={{ r: 4, fill: "hsl(var(--primary))", strokeWidth: 2, stroke: "hsl(var(--card))" }}
+                        activeDot={{ r: 6 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                  <div className="h-[200px] flex items-center justify-center text-muted-foreground">
                     <div className="text-center">
-                      <BarChart3 className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Complete more tests to see your trend line</p>
+                      <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Complete more tests to see your trend</p>
                     </div>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            <div className="grid lg:grid-cols-2 gap-8">
-              {/* Subject Comparison */}
+            {/* Subject Performance */}
+            {subjectAvg.length > 0 && (
               <Card className="rounded-2xl shadow-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-primary" />
-                    Subject Performance
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-primary" />
+                    By Subject
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {subjectAvg.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={250}>
-                      <BarChart data={subjectAvg} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis type="number" domain={[0, 100]} stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                        <YAxis
-                          type="category"
-                          dataKey="subject"
-                          stroke="hsl(var(--muted-foreground))"
-                          fontSize={12}
-                          width={120}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: "hsl(var(--card))",
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "0.75rem",
-                            fontSize: 13,
-                          }}
-                          formatter={(value: number) => [`${value}%`, "Average"]}
-                        />
-                        <Bar dataKey="average" fill="hsl(var(--secondary))" radius={[0, 8, 8, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <p className="text-center text-muted-foreground py-8">No data yet</p>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Topic Radar */}
-              <Card className="rounded-2xl shadow-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="w-5 h-5 text-primary" />
-                    Topic Strengths
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {radarData.length >= 3 ? (
-                    <ResponsiveContainer width="100%" height={250}>
-                      <RadarChart data={radarData}>
-                        <PolarGrid stroke="hsl(var(--border))" />
-                        <PolarAngleAxis dataKey="topic" fontSize={10} stroke="hsl(var(--muted-foreground))" />
-                        <PolarRadiusAxis angle={30} domain={[0, 100]} fontSize={10} />
-                        <Radar
-                          dataKey="score"
-                          stroke="hsl(var(--primary))"
-                          fill="hsl(var(--primary))"
-                          fillOpacity={0.2}
-                          strokeWidth={2}
-                        />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <p className="text-center text-muted-foreground py-8 text-sm">
-                      Complete more tests to see topic analysis
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Topic Breakdown Table */}
-            <Card className="rounded-2xl shadow-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-primary" />
-                  Topic Breakdown
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {topicData.map((topic) => (
-                    <div key={topic.topic} className="flex items-center gap-4">
-                      <div className="w-40 truncate text-sm font-medium">{topic.topic}</div>
-                      <div className="flex-1">
-                        <Progress value={topic.percentage} className="h-3" />
+                  <div className="space-y-3">
+                    {subjectAvg.map((s) => (
+                      <div key={s.subject} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-medium">{s.subject}</span>
+                          <span className="text-muted-foreground">{s.average}% · {s.tests} tests</span>
+                        </div>
+                        <Progress value={s.average} className="h-2" />
                       </div>
-                      <div className="w-16 text-right">
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Collapsible Topic Breakdown */}
+            {topicData.length > 0 && (
+              <Card className="rounded-2xl shadow-card">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4 text-primary" />
+                    All Topics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {(showAllTopics ? topicData : topicData.slice(0, 5)).map((topic) => (
+                      <div key={topic.topic} className="flex items-center gap-3">
+                        <div className="w-32 sm:w-40 truncate text-sm">{topic.topic}</div>
+                        <div className="flex-1">
+                          <Progress value={topic.percentage} className="h-2" />
+                        </div>
                         <span
-                          className={`text-sm font-bold ${
-                            topic.percentage >= 70 ? "text-teal" : topic.percentage >= 40 ? "text-sunshine" : "text-coral"
+                          className={`text-xs font-semibold w-10 text-right ${
+                            topic.percentage >= 70
+                              ? "text-secondary"
+                              : topic.percentage >= 40
+                              ? "text-accent-foreground"
+                              : "text-destructive"
                           }`}
                         >
                           {topic.percentage}%
                         </span>
                       </div>
-                      <div className="w-20 text-right text-xs text-muted-foreground">
-                        {topic.correct}/{topic.total}
-                      </div>
-                    </div>
-                  ))}
-                  {topicData.length === 0 && (
-                    <p className="text-center text-muted-foreground py-4 text-sm">No topic data yet</p>
+                    ))}
+                  </div>
+                  {topicData.length > 5 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full mt-3 text-xs text-muted-foreground"
+                      onClick={() => setShowAllTopics(!showAllTopics)}
+                    >
+                      {showAllTopics ? (
+                        <>Show Less <ChevronUp className="w-3 h-3 ml-1" /></>
+                      ) : (
+                        <>Show All {topicData.length} Topics <ChevronDown className="w-3 h-3 ml-1" /></>
+                      )}
+                    </Button>
                   )}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
-            {/* Test History */}
+            {/* Recent Tests — compact list, last 5 */}
             <Card className="rounded-2xl shadow-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  Test History
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-primary" />
+                  Recent Tests
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {[...attempts].reverse().map((attempt) => {
+                <div className="space-y-2">
+                  {[...attempts].reverse().slice(0, 5).map((attempt) => {
                     const pct = Math.round(
                       ((attempt.score || 0) / (attempt.total_questions || 1)) * 100
                     );
                     return (
                       <div
                         key={attempt.id}
-                        className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl"
+                        className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl"
                       >
-                        <div
-                          className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                            attempt.diagnostic_tests?.subject === "Mathematics"
-                              ? "bg-coral/20"
-                              : "bg-teal/20"
-                          }`}
-                        >
-                          <BookOpen
-                            className={`w-5 h-5 ${
-                              attempt.diagnostic_tests?.subject === "Mathematics"
-                                ? "text-coral"
-                                : "text-teal"
-                            }`}
-                          />
-                        </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm truncate">
+                          <p className="font-medium text-sm truncate">
                             {attempt.diagnostic_tests?.title}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {format(new Date(attempt.completed_at), "dd MMM yyyy, HH:mm")}
+                            {format(new Date(attempt.completed_at), "dd MMM yyyy")}
                             {attempt.time_spent_seconds &&
-                              ` • ${Math.round(attempt.time_spent_seconds / 60)} min`}
+                              ` · ${Math.round(attempt.time_spent_seconds / 60)}min`}
                           </p>
                         </div>
                         <Badge
                           variant={pct >= 70 ? "default" : "secondary"}
-                          className={
-                            pct >= 70
-                              ? "bg-teal text-primary-foreground"
-                              : ""
-                          }
+                          className={pct >= 70 ? "bg-secondary text-secondary-foreground" : ""}
                         >
                           {pct}%
                         </Badge>
