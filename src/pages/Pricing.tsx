@@ -199,15 +199,29 @@ const Pricing = () => {
         </div>
       </section>
       
-      <section className="py-16 bg-muted/50">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="font-display text-2xl font-bold mb-4">Have Questions?</h2>
-          <p className="text-muted-foreground mb-6">
-            We're here to help. Reach out to our team.
-          </p>
-          <Button variant="secondary" asChild>
-            <Link to="/contact">Contact Us</Link>
-          </Button>
+      <section className="py-20 bg-muted/50">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-10">
+            Frequently Asked <span className="text-gradient-hero">Questions</span>
+          </h2>
+          <Accordion type="single" collapsible className="space-y-3">
+            {faqs.map((faq, i) => (
+              <AccordionItem key={i} value={`faq-${i}`} className="bg-card rounded-2xl border px-6 shadow-soft">
+                <AccordionTrigger className="text-left font-semibold text-sm hover:no-underline py-5">
+                  {faq.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground text-sm pb-5">
+                  {faq.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+          <div className="text-center mt-10">
+            <p className="text-muted-foreground mb-4">Still have questions?</p>
+            <Button variant="secondary" asChild>
+              <Link to="/contact">Contact Us</Link>
+            </Button>
+          </div>
         </div>
       </section>
       

@@ -358,6 +358,7 @@ const Index = () => {
       <HeroSection />
       <FeaturesSection />
       <SubjectsSection />
+      <TestimonialsSection />
       <CTASection />
       <Footer />
     </div>
