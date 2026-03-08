@@ -20,7 +20,8 @@ import {
   LogOut,
   Bell,
   Zap,
-  Flame
+  Flame,
+  FileText,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
