@@ -162,5 +162,5 @@ export function useLearnerDashboard(userId: string | undefined) {
     fetchData();
   }, [userId]);
 
-  return { upcomingSessions, recentDiagnostics, streak, loading };
+  return { upcomingSessions, completedSessions, recentDiagnostics, streak, loading };
 }
