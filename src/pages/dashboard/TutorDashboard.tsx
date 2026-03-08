@@ -29,6 +29,8 @@ import {
   Check,
   X,
   Timer,
+  FileText,
+  PenLine,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
