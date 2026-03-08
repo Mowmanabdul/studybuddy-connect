@@ -500,7 +500,9 @@ const LearnerProgress = () => {
                       <div key={s.subject} className="space-y-1">
                         <div className="flex items-center justify-between text-sm">
                           <span className="font-medium">{s.subject}</span>
-                          <span className="text-muted-foreground">{s.average}% · {s.tests} tests</span>
+                          <span className="text-muted-foreground">
+                            {s.average}% · {s.tests} diag · {s.quizzes} quiz
+                          </span>
                         </div>
                         <Progress value={s.average} className="h-2" />
                       </div>
