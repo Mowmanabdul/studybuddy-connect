@@ -1,0 +1,1 @@
+ALTER TABLE public.session_bookings ADD COLUMN tutor_notes text DEFAULT NULL;
