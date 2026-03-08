@@ -573,7 +573,8 @@ const LearnerProgress = () => {
                         return (
                           <div
                             key={`${item.type}-${item.id}`}
-                            className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl"
+                            className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl cursor-pointer hover:bg-muted transition-colors"
+                            onClick={() => setSelectedActivity(item)}
                           >
                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                               item.type === "diagnostic" ? "bg-primary/10" : "bg-accent/10"
@@ -598,6 +599,7 @@ const LearnerProgress = () => {
                             >
                               {pct}%
                             </Badge>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
                           </div>
                         );
                       });
@@ -608,6 +610,12 @@ const LearnerProgress = () => {
           </div>
         )}
       </main>
+
+      <ActivityDetailDialog
+        activity={selectedActivity}
+        open={!!selectedActivity}
+        onOpenChange={(open) => !open && setSelectedActivity(null)}
+      />
     </div>
   );
 };
