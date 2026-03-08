@@ -13,6 +13,7 @@ interface TutorSession {
   status: string;
   notes: string | null;
   meeting_link: string | null;
+  tutor_notes: string | null;
 }
 
 interface TutorStats {
@@ -109,6 +110,7 @@ export const useTutorDashboard = (userId: string | undefined) => {
         status: b.status,
         notes: b.notes,
         meeting_link: b.meeting_link,
+        tutor_notes: b.tutor_notes,
       };
     };
 
@@ -188,6 +190,19 @@ export const useTutorDashboard = (userId: string | undefined) => {
     }
   };
 
+  const saveTutorNotes = async (sessionId: string, notes: string) => {
+    const { error } = await supabase
+      .from("session_bookings")
+      .update({ tutor_notes: notes } as any)
+      .eq("id", sessionId);
+    if (error) {
+      toast.error("Failed to save session notes");
+    } else {
+      toast.success("Session notes saved!");
+      fetchDashboardData();
+    }
+  };
+
   return {
     upcomingSessions,
     recentSessions,
@@ -198,5 +213,6 @@ export const useTutorDashboard = (userId: string | undefined) => {
     declineSession,
     addMeetingLink,
     completeSession,
+    saveTutorNotes,
   };
 };

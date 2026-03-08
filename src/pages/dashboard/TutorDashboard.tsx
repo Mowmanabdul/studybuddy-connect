@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -28,6 +29,8 @@ import {
   Check,
   X,
   Timer,
+  FileText,
+  PenLine,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
@@ -42,6 +45,8 @@ const TutorDashboard = () => {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [meetingLinkInput, setMeetingLinkInput] = useState<Record<string, string>>({});
   const [showLinkInput, setShowLinkInput] = useState<string | null>(null);
+  const [notesInput, setNotesInput] = useState<Record<string, string>>({});
+  const [showNotesInput, setShowNotesInput] = useState<string | null>(null);
   
   const {
     upcomingSessions,
@@ -52,6 +57,7 @@ const TutorDashboard = () => {
     declineSession,
     addMeetingLink,
     completeSession,
+    saveTutorNotes,
   } = useTutorDashboard(user?.id);
   
   const handleLogout = async () => {
@@ -79,6 +85,14 @@ const TutorDashboard = () => {
     if (link?.trim()) {
       addMeetingLink(sessionId, link.trim());
       setShowLinkInput(null);
+    }
+  };
+
+  const handleSaveNotes = (sessionId: string) => {
+    const notes = notesInput[sessionId];
+    if (notes?.trim()) {
+      saveTutorNotes(sessionId, notes.trim());
+      setShowNotesInput(null);
     }
   };
   
@@ -310,27 +324,82 @@ const TutorDashboard = () => {
                   {recentSessions.map((session) => (
                     <div 
                       key={session.id}
-                      className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl"
+                      className="p-4 bg-muted/50 rounded-xl space-y-3"
                     >
-                      <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
-                        <User className="w-5 h-5 text-muted-foreground" />
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold truncate">{session.learner_name}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {session.subject} · {session.duration_minutes}min
+                          </p>
+                        </div>
+                        
+                        <div className="text-right shrink-0">
+                          <span className="flex items-center gap-1 text-sm text-teal font-medium">
+                            <CheckCircle2 className="w-4 h-4" /> Complete
+                          </span>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(session.scheduled_at), "dd MMM")}
+                          </p>
+                        </div>
                       </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold truncate">{session.learner_name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {session.subject} · {session.duration_minutes}min
-                        </p>
-                      </div>
-                      
-                      <div className="text-right shrink-0">
-                        <span className="flex items-center gap-1 text-sm text-teal font-medium">
-                          <CheckCircle2 className="w-4 h-4" /> Complete
-                        </span>
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(session.scheduled_at), "dd MMM")}
-                        </p>
-                      </div>
+
+                      {/* Tutor Notes */}
+                      {session.tutor_notes ? (
+                        <div className="bg-card rounded-lg p-3 border border-border/50">
+                          <div className="flex items-center gap-2 mb-1">
+                            <FileText className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-xs font-semibold text-primary">Session Notes</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{session.tutor_notes}</p>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="mt-2 h-7 text-xs"
+                            onClick={() => {
+                              setNotesInput(prev => ({ ...prev, [session.id]: session.tutor_notes || "" }));
+                              setShowNotesInput(session.id);
+                            }}
+                          >
+                            <PenLine className="w-3 h-3 mr-1" /> Edit
+                          </Button>
+                        </div>
+                      ) : showNotesInput !== session.id ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs"
+                          onClick={() => {
+                            setNotesInput(prev => ({ ...prev, [session.id]: "" }));
+                            setShowNotesInput(session.id);
+                          }}
+                        >
+                          <PenLine className="w-3 h-3 mr-1" /> Add Session Notes
+                        </Button>
+                      ) : null}
+
+                      {showNotesInput === session.id && (
+                        <div className="space-y-2">
+                          <Textarea
+                            placeholder="Write a summary of this session... (topics covered, progress, homework assigned)"
+                            value={notesInput[session.id] || ""}
+                            onChange={(e) => setNotesInput(prev => ({ ...prev, [session.id]: e.target.value }))}
+                            className="text-sm min-h-[80px]"
+                          />
+                          <div className="flex gap-2">
+                            <Button size="sm" onClick={() => handleSaveNotes(session.id)}>
+                              Save Notes
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => setShowNotesInput(null)}>
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
