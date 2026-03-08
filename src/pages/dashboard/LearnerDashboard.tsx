@@ -231,6 +231,55 @@ const LearnerDashboard = () => {
               )}
             </div>
           </div>
+
+          {/* Completed Sessions with Tutor Notes */}
+          <div className="lg:col-span-2">
+            <div className="bg-card rounded-2xl shadow-card p-6 border">
+              <h2 className="font-display text-xl font-bold mb-6">Session Notes from Tutor</h2>
+              
+              {loading ? (
+                <div className="space-y-4">
+                  {[1, 2].map(i => (
+                    <div key={i} className="h-20 bg-muted/50 rounded-xl animate-pulse" />
+                  ))}
+                </div>
+              ) : completedSessions.filter(s => s.tutor_notes).length > 0 ? (
+                <div className="space-y-4">
+                  {completedSessions.filter(s => s.tutor_notes).map((session) => (
+                    <div key={session.id} className="p-4 bg-muted/50 rounded-xl space-y-2">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                          session.subject === "Mathematics" ? "bg-coral/20" : "bg-teal/20"
+                        }`}>
+                          <BookOpen className={`w-5 h-5 ${
+                            session.subject === "Mathematics" ? "text-coral" : "text-teal"
+                          }`} />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm">{session.subject}</h4>
+                          <p className="text-xs text-muted-foreground">
+                            with {session.tutor_name} · {format(new Date(session.scheduled_at), "dd MMM yyyy")}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-card rounded-lg p-3 border border-border/50">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <FileText className="w-3.5 h-3.5 text-primary" />
+                          <span className="text-xs font-semibold text-primary">Tutor's Notes</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{session.tutor_notes}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <FileText className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No session notes from your tutor yet</p>
+                </div>
+              )}
+            </div>
+          </div>
           
           {/* Recent Diagnostics */}
           <div>
