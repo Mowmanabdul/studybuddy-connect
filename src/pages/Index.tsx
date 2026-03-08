@@ -255,6 +255,73 @@ const SubjectsSection = () => (
   </section>
 );
 
+const testimonials = [
+  {
+    name: "Thandi M.",
+    grade: "Grade 12",
+    location: "Johannesburg",
+    quote: "Thuto AI helped me go from 45% to 78% in Maths! The AI homework helper explains things the way my brain works. I finally understand calculus! 🔥",
+    subject: "Mathematics",
+    improvement: "+33%",
+  },
+  {
+    name: "Sipho K.",
+    grade: "Grade 11",
+    location: "Cape Town",
+    quote: "The diagnostic test showed me exactly where I was struggling. My tutor focused on those areas and now Physical Sciences makes sense. Sharp sharp!",
+    subject: "Physical Sciences",
+    improvement: "+28%",
+  },
+  {
+    name: "Naledi D.",
+    grade: "Grade 10",
+    location: "Durban",
+    quote: "I used to hate asking questions in class. With the AI helper I can ask anything without feeling shy. It's like having a patient friend who loves Maths.",
+    subject: "Mathematics",
+    improvement: "+22%",
+  },
+];
+
+const TestimonialsSection = () => (
+  <section className="py-24 bg-muted/50">
+    <div className="container mx-auto px-4">
+      <div className="text-center max-w-2xl mx-auto mb-16">
+        <h2 className="font-display text-4xl md:text-5xl font-bold mb-4">
+          Learners Are <span className="text-gradient-cool">Loving It</span>
+        </h2>
+        <p className="text-lg text-muted-foreground">
+          Real results from real South African learners using Thuto AI.
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        {testimonials.map((t) => (
+          <div
+            key={t.name}
+            className="bg-card rounded-2xl p-6 shadow-card hover:shadow-lg transition-all hover:-translate-y-1"
+          >
+            <div className="flex items-center gap-1 mb-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Star key={i} className="w-4 h-4 fill-sunshine text-sunshine" />
+              ))}
+            </div>
+            <p className="text-sm text-foreground leading-relaxed mb-6">"{t.quote}"</p>
+            <div className="flex items-center justify-between pt-4 border-t border-border/50">
+              <div>
+                <p className="font-semibold text-sm">{t.name}</p>
+                <p className="text-xs text-muted-foreground">{t.grade} · {t.location}</p>
+              </div>
+              <span className="text-xs font-bold text-teal bg-teal/10 px-2.5 py-1 rounded-full">
+                {t.improvement}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
 const CTASection = () => (
   <section className="py-24">
     <div className="container mx-auto px-4">
@@ -291,6 +358,7 @@ const Index = () => {
       <HeroSection />
       <FeaturesSection />
       <SubjectsSection />
+      <TestimonialsSection />
       <CTASection />
       <Footer />
     </div>

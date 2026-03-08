@@ -4,11 +4,45 @@ import { SEO } from "@/components/SEO";
 import { 
   Check, 
   ArrowRight,
-  Zap
+  Zap,
+  ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+const faqs = [
+  {
+    q: "Can I try Thuto AI for free?",
+    a: "Absolutely! The Starter plan is completely free and includes one diagnostic test, 5 AI homework questions per day, and access to our learning resources. No credit card required.",
+  },
+  {
+    q: "What subjects and grades do you cover?",
+    a: "We specialize in Mathematics and Physical Sciences for Grades 8–12, fully aligned with the South African CAPS curriculum.",
+  },
+  {
+    q: "How do tutoring sessions work?",
+    a: "Sessions are 1-on-1 video calls with a qualified tutor. You book a time slot, and join via the meeting link in your dashboard. Sessions are typically 60 minutes.",
+  },
+  {
+    q: "Can I cancel or change my plan?",
+    a: "Yes! You can upgrade, downgrade, or cancel your plan at any time. Changes take effect at the start of your next billing period.",
+  },
+  {
+    q: "Is the AI homework helper safe for learners?",
+    a: "Yes. The AI is designed to guide learners to discover answers, not just provide them. It stays strictly on topic for Maths and Science, and never produces inappropriate content.",
+  },
+  {
+    q: "Do you offer discounts for schools?",
+    a: "Yes! We offer special pricing for schools and groups of 10+ learners. Contact us for a custom quote.",
+  },
+];
 
 const plans = [
   {
@@ -165,15 +199,29 @@ const Pricing = () => {
         </div>
       </section>
       
-      <section className="py-16 bg-muted/50">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="font-display text-2xl font-bold mb-4">Have Questions?</h2>
-          <p className="text-muted-foreground mb-6">
-            We're here to help. Reach out to our team.
-          </p>
-          <Button variant="secondary" asChild>
-            <Link to="/contact">Contact Us</Link>
-          </Button>
+      <section className="py-20 bg-muted/50">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-10">
+            Frequently Asked <span className="text-gradient-hero">Questions</span>
+          </h2>
+          <Accordion type="single" collapsible className="space-y-3">
+            {faqs.map((faq, i) => (
+              <AccordionItem key={i} value={`faq-${i}`} className="bg-card rounded-2xl border px-6 shadow-soft">
+                <AccordionTrigger className="text-left font-semibold text-sm hover:no-underline py-5">
+                  {faq.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground text-sm pb-5">
+                  {faq.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+          <div className="text-center mt-10">
+            <p className="text-muted-foreground mb-4">Still have questions?</p>
+            <Button variant="secondary" asChild>
+              <Link to="/contact">Contact Us</Link>
+            </Button>
+          </div>
         </div>
       </section>
       
