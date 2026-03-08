@@ -48,6 +48,15 @@ interface AttemptWithTest {
   } | null;
 }
 
+interface QuizSession {
+  id: string;
+  score: number | null;
+  total_questions: number;
+  completed_at: string | null;
+  subject: string;
+  difficulty: string;
+}
+
 interface TopicPerformance {
   topic: string;
   correct: number;
@@ -59,10 +68,11 @@ const LearnerProgress = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [attempts, setAttempts] = useState<AttemptWithTest[]>([]);
+  const [quizSessions, setQuizSessions] = useState<QuizSession[]>([]);
   const [topicData, setTopicData] = useState<TopicPerformance[]>([]);
   const [loading, setLoading] = useState(true);
   const [subjectFilter, setSubjectFilter] = useState<string>("all");
-  
+  const [viewMode, setViewMode] = useState<"all" | "diagnostics" | "quizzes">("all");
 
   useEffect(() => {
     if (!user) return;
@@ -73,7 +83,7 @@ const LearnerProgress = () => {
     if (!user) return;
     setLoading(true);
 
-    const [attemptsRes, answersRes] = await Promise.all([
+    const [attemptsRes, answersRes, quizzesRes] = await Promise.all([
       supabase
         .from("diagnostic_attempts")
         .select(`*, diagnostic_tests (title, subject, grade)`)
@@ -89,10 +99,20 @@ const LearnerProgress = () => {
         `)
         .eq("diagnostic_attempts.user_id", user.id)
         .eq("diagnostic_attempts.status", "completed"),
+      supabase
+        .from("quiz_sessions")
+        .select("id, score, total_questions, completed_at, subject, difficulty")
+        .eq("user_id", user.id)
+        .eq("status", "completed")
+        .order("completed_at", { ascending: true }),
     ]);
 
     if (attemptsRes.data) {
       setAttempts(attemptsRes.data as AttemptWithTest[]);
+    }
+
+    if (quizzesRes.data) {
+      setQuizSessions(quizzesRes.data as QuizSession[]);
     }
 
     if (answersRes.data) {
@@ -124,48 +144,89 @@ const LearnerProgress = () => {
       ? attempts
       : attempts.filter((a) => a.diagnostic_tests?.subject === subjectFilter);
 
-  const subjects = [...new Set(attempts.map((a) => a.diagnostic_tests?.subject).filter(Boolean))];
+  const filteredQuizzes =
+    subjectFilter === "all"
+      ? quizSessions
+      : quizSessions.filter((q) => q.subject === subjectFilter);
 
-  const trendData = filteredAttempts.map((a) => ({
+  const allSubjects = [
+    ...new Set([
+      ...attempts.map((a) => a.diagnostic_tests?.subject).filter(Boolean),
+      ...quizSessions.map((q) => q.subject).filter(Boolean),
+    ]),
+  ] as string[];
+
+  // Combined trend data from both diagnostics and quizzes
+  const diagnosticTrendData = viewMode !== "quizzes" ? filteredAttempts.map((a) => ({
     date: format(new Date(a.completed_at), "dd MMM"),
     score: Math.round(((a.score || 0) / (a.total_questions || 1)) * 100),
-    test: a.diagnostic_tests?.title || "",
-  }));
+    label: a.diagnostic_tests?.title || "Diagnostic",
+    type: "diagnostic" as const,
+    timestamp: new Date(a.completed_at).getTime(),
+  })) : [];
 
-  const subjectAvg = subjects.map((subject) => {
+  const quizTrendData = viewMode !== "diagnostics" ? filteredQuizzes.filter(q => q.completed_at).map((q) => ({
+    date: format(new Date(q.completed_at!), "dd MMM"),
+    score: Math.round(((q.score || 0) / (q.total_questions || 1)) * 100),
+    label: `${q.subject} Quiz`,
+    type: "quiz" as const,
+    timestamp: new Date(q.completed_at!).getTime(),
+  })) : [];
+
+  const trendData = [...diagnosticTrendData, ...quizTrendData]
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .map(({ date, score, label, type }) => ({ date, score, test: label, type }));
+
+  // Subject averages including both diagnostics and quizzes
+  const subjectAvg = allSubjects.map((subject) => {
     const subjectAttempts = attempts.filter((a) => a.diagnostic_tests?.subject === subject);
-    const avg =
-      subjectAttempts.reduce(
-        (sum, a) => sum + ((a.score || 0) / (a.total_questions || 1)) * 100,
-        0
-      ) / (subjectAttempts.length || 1);
-    return { subject: subject!, average: Math.round(avg), tests: subjectAttempts.length };
+    const subjectQuizzes = quizSessions.filter((q) => q.subject === subject);
+    
+    const diagAvg = subjectAttempts.length > 0
+      ? subjectAttempts.reduce((sum, a) => sum + ((a.score || 0) / (a.total_questions || 1)) * 100, 0) / subjectAttempts.length
+      : 0;
+    
+    const quizAvg = subjectQuizzes.length > 0
+      ? subjectQuizzes.reduce((sum, q) => sum + ((q.score || 0) / (q.total_questions || 1)) * 100, 0) / subjectQuizzes.length
+      : 0;
+    
+    const totalCount = subjectAttempts.length + subjectQuizzes.length;
+    const combinedAvg = totalCount > 0
+      ? (diagAvg * subjectAttempts.length + quizAvg * subjectQuizzes.length) / totalCount
+      : 0;
+    
+    return {
+      subject: subject!,
+      average: Math.round(combinedAvg),
+      tests: subjectAttempts.length,
+      quizzes: subjectQuizzes.length,
+    };
   });
 
   const totalTests = attempts.length;
-  const overallAvg =
-    totalTests > 0
-      ? Math.round(
-          attempts.reduce(
-            (sum, a) => sum + ((a.score || 0) / (a.total_questions || 1)) * 100,
-            0
-          ) / totalTests
-        )
-      : 0;
+  const totalQuizzes = quizSessions.length;
+  const totalActivities = totalTests + totalQuizzes;
 
-  const recentAvg =
-    attempts.length >= 3
-      ? Math.round(
-          attempts
-            .slice(-3)
-            .reduce(
-              (sum, a) => sum + ((a.score || 0) / (a.total_questions || 1)) * 100,
-              0
-            ) / 3
-        )
-      : overallAvg;
+  const allScores = [
+    ...attempts.map(a => ((a.score || 0) / (a.total_questions || 1)) * 100),
+    ...quizSessions.map(q => ((q.score || 0) / (q.total_questions || 1)) * 100),
+  ];
+  
+  const overallAvg = allScores.length > 0
+    ? Math.round(allScores.reduce((sum, s) => sum + s, 0) / allScores.length)
+    : 0;
+
+  const recentScores = allScores.slice(-5);
+  const recentAvg = recentScores.length > 0
+    ? Math.round(recentScores.reduce((sum, s) => sum + s, 0) / recentScores.length)
+    : overallAvg;
 
   const trend = recentAvg - overallAvg;
+
+  // Quiz-specific stats
+  const quizAvg = totalQuizzes > 0
+    ? Math.round(quizSessions.reduce((sum, q) => sum + ((q.score || 0) / (q.total_questions || 1)) * 100, 0) / totalQuizzes)
+    : 0;
 
   // Split topics into strengths (≥70%) and weaknesses (<70%), top 3 each
   const strengths = [...topicData].sort((a, b) => b.percentage - a.percentage).filter(t => t.percentage >= 50).slice(0, 3);
@@ -198,22 +259,28 @@ const LearnerProgress = () => {
             </div>
             <Skeleton className="h-72 rounded-2xl" />
           </div>
-        ) : totalTests === 0 ? (
+        ) : totalActivities === 0 ? (
           <div className="text-center py-20">
             <BarChart3 className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
             <h2 className="font-display text-2xl font-bold mb-2">No Progress Data Yet</h2>
             <p className="text-muted-foreground mb-6">
-              Complete diagnostic tests to start tracking your learning journey.
+              Complete diagnostic tests or quizzes to start tracking your learning journey.
             </p>
-            <Button variant="hero" onClick={() => navigate("/dashboard/diagnostic")}>
-              <Brain className="w-4 h-4 mr-2" />
-              Take Your First Test
-            </Button>
+            <div className="flex gap-3 justify-center">
+              <Button variant="hero" onClick={() => navigate("/dashboard/diagnostic")}>
+                <Brain className="w-4 h-4 mr-2" />
+                Take a Diagnostic
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/dashboard/quiz")}>
+                <Flame className="w-4 h-4 mr-2" />
+                Quick Quiz
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="space-y-6">
             {/* Compact Stats */}
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-4 gap-4">
               <Card className="rounded-2xl shadow-card">
                 <CardContent className="pt-5 pb-4">
                   <div className="flex items-center gap-3">
@@ -222,7 +289,21 @@ const LearnerProgress = () => {
                     </div>
                     <div>
                       <p className="text-2xl font-bold leading-tight">{totalTests}</p>
-                      <p className="text-xs text-muted-foreground">Tests Completed</p>
+                      <p className="text-xs text-muted-foreground">Diagnostics</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl shadow-card">
+                <CardContent className="pt-5 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center shrink-0">
+                      <Flame className="w-5 h-5 text-accent-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold leading-tight">{totalQuizzes}</p>
+                      <p className="text-xs text-muted-foreground">Quizzes · {quizAvg}% avg</p>
                     </div>
                   </div>
                 </CardContent>
@@ -318,24 +399,49 @@ const LearnerProgress = () => {
                     <TrendingUp className="w-4 h-4 text-primary" />
                     Score Trend
                   </CardTitle>
-                  <div className="flex gap-1.5 flex-wrap">
-                    <Badge
-                      variant={subjectFilter === "all" ? "default" : "outline"}
-                      className="cursor-pointer text-xs"
-                      onClick={() => setSubjectFilter("all")}
-                    >
-                      All
-                    </Badge>
-                    {subjects.map((s) => (
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex gap-1.5 flex-wrap">
                       <Badge
-                        key={s}
-                        variant={subjectFilter === s ? "default" : "outline"}
+                        variant={viewMode === "all" ? "default" : "outline"}
                         className="cursor-pointer text-xs"
-                        onClick={() => setSubjectFilter(s!)}
+                        onClick={() => setViewMode("all")}
                       >
-                        {s}
+                        All
                       </Badge>
-                    ))}
+                      <Badge
+                        variant={viewMode === "diagnostics" ? "default" : "outline"}
+                        className="cursor-pointer text-xs"
+                        onClick={() => setViewMode("diagnostics")}
+                      >
+                        Diagnostics
+                      </Badge>
+                      <Badge
+                        variant={viewMode === "quizzes" ? "default" : "outline"}
+                        className="cursor-pointer text-xs"
+                        onClick={() => setViewMode("quizzes")}
+                      >
+                        Quizzes
+                      </Badge>
+                    </div>
+                    <div className="flex gap-1.5 flex-wrap">
+                      <Badge
+                        variant={subjectFilter === "all" ? "secondary" : "outline"}
+                        className="cursor-pointer text-xs"
+                        onClick={() => setSubjectFilter("all")}
+                      >
+                        All Subjects
+                      </Badge>
+                      {allSubjects.map((s) => (
+                        <Badge
+                          key={s}
+                          variant={subjectFilter === s ? "secondary" : "outline"}
+                          className="cursor-pointer text-xs"
+                          onClick={() => setSubjectFilter(s)}
+                        >
+                          {s}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </CardHeader>
@@ -394,7 +500,9 @@ const LearnerProgress = () => {
                       <div key={s.subject} className="space-y-1">
                         <div className="flex items-center justify-between text-sm">
                           <span className="font-medium">{s.subject}</span>
-                          <span className="text-muted-foreground">{s.average}% · {s.tests} tests</span>
+                          <span className="text-muted-foreground">
+                            {s.average}% · {s.tests} diag · {s.quizzes} quiz
+                          </span>
                         </div>
                         <Progress value={s.average} className="h-2" />
                       </div>
@@ -409,48 +517,79 @@ const LearnerProgress = () => {
               <GoalTracker
                 userId={user.id}
                 subjectAverages={subjectAvg}
-                availableSubjects={subjects as string[]}
+                availableSubjects={allSubjects}
               />
             )}
 
-            {/* Recent Tests — compact list, last 5 */}
+            {/* Recent Activity — combined list */}
             <Card className="rounded-2xl shadow-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-primary" />
-                  Recent Tests
+                  Recent Activity
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {[...attempts].reverse().slice(0, 5).map((attempt) => {
-                    const pct = Math.round(
-                      ((attempt.score || 0) / (attempt.total_questions || 1)) * 100
-                    );
-                    return (
-                      <div
-                        key={attempt.id}
-                        className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">
-                            {attempt.diagnostic_tests?.title}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(attempt.completed_at), "dd MMM yyyy")}
-                            {attempt.time_spent_seconds &&
-                              ` · ${Math.round(attempt.time_spent_seconds / 60)}min`}
-                          </p>
-                        </div>
-                        <Badge
-                          variant={pct >= 70 ? "default" : "secondary"}
-                          className={pct >= 70 ? "bg-secondary text-secondary-foreground" : ""}
-                        >
-                          {pct}%
-                        </Badge>
-                      </div>
-                    );
-                  })}
+                  {(() => {
+                    const recentDiagnostics = attempts.map(a => ({
+                      id: a.id,
+                      type: "diagnostic" as const,
+                      title: a.diagnostic_tests?.title || "Diagnostic",
+                      date: new Date(a.completed_at),
+                      score: a.score || 0,
+                      total: a.total_questions || 1,
+                      time: a.time_spent_seconds,
+                    }));
+                    
+                    const recentQuizzes = quizSessions.filter(q => q.completed_at).map(q => ({
+                      id: q.id,
+                      type: "quiz" as const,
+                      title: `${q.subject} Quiz`,
+                      date: new Date(q.completed_at!),
+                      score: q.score || 0,
+                      total: q.total_questions || 1,
+                      time: null,
+                      difficulty: q.difficulty,
+                    }));
+                    
+                    return [...recentDiagnostics, ...recentQuizzes]
+                      .sort((a, b) => b.date.getTime() - a.date.getTime())
+                      .slice(0, 6)
+                      .map((item) => {
+                        const pct = Math.round((item.score / item.total) * 100);
+                        return (
+                          <div
+                            key={`${item.type}-${item.id}`}
+                            className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl"
+                          >
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                              item.type === "diagnostic" ? "bg-primary/10" : "bg-accent/10"
+                            }`}>
+                              {item.type === "diagnostic" ? (
+                                <Brain className="w-4 h-4 text-primary" />
+                              ) : (
+                                <Flame className="w-4 h-4 text-accent-foreground" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate">{item.title}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(item.date, "dd MMM yyyy")}
+                                {item.time && ` · ${Math.round(item.time / 60)}min`}
+                                {item.type === "quiz" && " · Quiz"}
+                              </p>
+                            </div>
+                            <Badge
+                              variant={pct >= 70 ? "default" : "secondary"}
+                              className={pct >= 70 ? "bg-secondary text-secondary-foreground" : ""}
+                            >
+                              {pct}%
+                            </Badge>
+                          </div>
+                        );
+                      });
+                  })()}
                 </div>
               </CardContent>
             </Card>
