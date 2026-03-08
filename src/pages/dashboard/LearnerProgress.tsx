@@ -259,22 +259,28 @@ const LearnerProgress = () => {
             </div>
             <Skeleton className="h-72 rounded-2xl" />
           </div>
-        ) : totalTests === 0 ? (
+        ) : totalActivities === 0 ? (
           <div className="text-center py-20">
             <BarChart3 className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
             <h2 className="font-display text-2xl font-bold mb-2">No Progress Data Yet</h2>
             <p className="text-muted-foreground mb-6">
-              Complete diagnostic tests to start tracking your learning journey.
+              Complete diagnostic tests or quizzes to start tracking your learning journey.
             </p>
-            <Button variant="hero" onClick={() => navigate("/dashboard/diagnostic")}>
-              <Brain className="w-4 h-4 mr-2" />
-              Take Your First Test
-            </Button>
+            <div className="flex gap-3 justify-center">
+              <Button variant="hero" onClick={() => navigate("/dashboard/diagnostic")}>
+                <Brain className="w-4 h-4 mr-2" />
+                Take a Diagnostic
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/dashboard/quiz")}>
+                <Flame className="w-4 h-4 mr-2" />
+                Quick Quiz
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="space-y-6">
             {/* Compact Stats */}
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-4 gap-4">
               <Card className="rounded-2xl shadow-card">
                 <CardContent className="pt-5 pb-4">
                   <div className="flex items-center gap-3">
@@ -283,7 +289,21 @@ const LearnerProgress = () => {
                     </div>
                     <div>
                       <p className="text-2xl font-bold leading-tight">{totalTests}</p>
-                      <p className="text-xs text-muted-foreground">Tests Completed</p>
+                      <p className="text-xs text-muted-foreground">Diagnostics</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl shadow-card">
+                <CardContent className="pt-5 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center shrink-0">
+                      <Flame className="w-5 h-5 text-accent-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold leading-tight">{totalQuizzes}</p>
+                      <p className="text-xs text-muted-foreground">Quizzes · {quizAvg}% avg</p>
                     </div>
                   </div>
                 </CardContent>
