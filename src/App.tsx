@@ -21,6 +21,7 @@ import BookSession from "./pages/dashboard/BookSession";
 import TutorAvailability from "./pages/dashboard/TutorAvailability";
 import LearnerProgress from "./pages/dashboard/LearnerProgress";
 import AdaptiveQuiz from "./pages/dashboard/AdaptiveQuiz";
+import MyLearners from "./pages/dashboard/MyLearners";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
