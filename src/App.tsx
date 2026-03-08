@@ -87,6 +87,14 @@ const AnimatedRoutes = () => {
           }
         />
         <Route
+          path="/dashboard/my-learners"
+          element={
+            <ProtectedRoute allowedRoles={["tutor"]}>
+              <PageTransition><MyLearners /></PageTransition>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/dashboard/progress"
           element={
             <ProtectedRoute allowedRoles={["learner"]}>
