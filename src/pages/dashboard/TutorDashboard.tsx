@@ -87,6 +87,14 @@ const TutorDashboard = () => {
       setShowLinkInput(null);
     }
   };
+
+  const handleSaveNotes = (sessionId: string) => {
+    const notes = notesInput[sessionId];
+    if (notes?.trim()) {
+      saveTutorNotes(sessionId, notes.trim());
+      setShowNotesInput(null);
+    }
+  };
   
   return (
     <div className="min-h-screen bg-muted/30">
