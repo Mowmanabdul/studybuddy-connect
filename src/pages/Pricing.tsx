@@ -4,11 +4,45 @@ import { SEO } from "@/components/SEO";
 import { 
   Check, 
   ArrowRight,
-  Zap
+  Zap,
+  ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+const faqs = [
+  {
+    q: "Can I try Thuto AI for free?",
+    a: "Absolutely! The Starter plan is completely free and includes one diagnostic test, 5 AI homework questions per day, and access to our learning resources. No credit card required.",
+  },
+  {
+    q: "What subjects and grades do you cover?",
+    a: "We specialize in Mathematics and Physical Sciences for Grades 8–12, fully aligned with the South African CAPS curriculum.",
+  },
+  {
+    q: "How do tutoring sessions work?",
+    a: "Sessions are 1-on-1 video calls with a qualified tutor. You book a time slot, and join via the meeting link in your dashboard. Sessions are typically 60 minutes.",
+  },
+  {
+    q: "Can I cancel or change my plan?",
+    a: "Yes! You can upgrade, downgrade, or cancel your plan at any time. Changes take effect at the start of your next billing period.",
+  },
+  {
+    q: "Is the AI homework helper safe for learners?",
+    a: "Yes. The AI is designed to guide learners to discover answers, not just provide them. It stays strictly on topic for Maths and Science, and never produces inappropriate content.",
+  },
+  {
+    q: "Do you offer discounts for schools?",
+    a: "Yes! We offer special pricing for schools and groups of 10+ learners. Contact us for a custom quote.",
+  },
+];
 
 const plans = [
   {
