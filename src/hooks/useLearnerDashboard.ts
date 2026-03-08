@@ -40,7 +40,7 @@ export function useLearnerDashboard(userId: string | undefined) {
     const fetchData = async () => {
       setLoading(true);
       
-      const [sessionsRes, diagnosticsRes, quizzesRes, diagnosticDatesRes] = await Promise.all([
+      const [sessionsRes, completedRes, diagnosticsRes, quizzesRes, diagnosticDatesRes] = await Promise.all([
         supabase
           .from("session_bookings")
           .select("id, subject, scheduled_at, notes, status, tutor_id")
@@ -49,6 +49,13 @@ export function useLearnerDashboard(userId: string | undefined) {
           .gte("scheduled_at", new Date().toISOString())
           .order("scheduled_at", { ascending: true })
           .limit(3),
+        supabase
+          .from("session_bookings")
+          .select("id, subject, scheduled_at, tutor_notes, duration_minutes, tutor_id")
+          .eq("learner_id", userId)
+          .eq("status", "completed")
+          .order("scheduled_at", { ascending: false })
+          .limit(5),
         supabase
           .from("diagnostic_attempts")
           .select(`
@@ -59,14 +66,12 @@ export function useLearnerDashboard(userId: string | undefined) {
           .eq("status", "completed")
           .order("completed_at", { ascending: false })
           .limit(3),
-        // Get quiz completion dates for streak
         supabase
           .from("quiz_sessions")
           .select("completed_at")
           .eq("user_id", userId)
           .eq("status", "completed")
           .not("completed_at", "is", null),
-        // Get diagnostic completion dates for streak
         supabase
           .from("diagnostic_attempts")
           .select("completed_at")
