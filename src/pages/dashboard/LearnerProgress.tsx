@@ -521,44 +521,75 @@ const LearnerProgress = () => {
               />
             )}
 
-            {/* Recent Tests — compact list, last 5 */}
+            {/* Recent Activity — combined list */}
             <Card className="rounded-2xl shadow-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-primary" />
-                  Recent Tests
+                  Recent Activity
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {[...attempts].reverse().slice(0, 5).map((attempt) => {
-                    const pct = Math.round(
-                      ((attempt.score || 0) / (attempt.total_questions || 1)) * 100
-                    );
-                    return (
-                      <div
-                        key={attempt.id}
-                        className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">
-                            {attempt.diagnostic_tests?.title}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(attempt.completed_at), "dd MMM yyyy")}
-                            {attempt.time_spent_seconds &&
-                              ` · ${Math.round(attempt.time_spent_seconds / 60)}min`}
-                          </p>
-                        </div>
-                        <Badge
-                          variant={pct >= 70 ? "default" : "secondary"}
-                          className={pct >= 70 ? "bg-secondary text-secondary-foreground" : ""}
-                        >
-                          {pct}%
-                        </Badge>
-                      </div>
-                    );
-                  })}
+                  {(() => {
+                    const recentDiagnostics = attempts.map(a => ({
+                      id: a.id,
+                      type: "diagnostic" as const,
+                      title: a.diagnostic_tests?.title || "Diagnostic",
+                      date: new Date(a.completed_at),
+                      score: a.score || 0,
+                      total: a.total_questions || 1,
+                      time: a.time_spent_seconds,
+                    }));
+                    
+                    const recentQuizzes = quizSessions.filter(q => q.completed_at).map(q => ({
+                      id: q.id,
+                      type: "quiz" as const,
+                      title: `${q.subject} Quiz`,
+                      date: new Date(q.completed_at!),
+                      score: q.score || 0,
+                      total: q.total_questions || 1,
+                      time: null,
+                      difficulty: q.difficulty,
+                    }));
+                    
+                    return [...recentDiagnostics, ...recentQuizzes]
+                      .sort((a, b) => b.date.getTime() - a.date.getTime())
+                      .slice(0, 6)
+                      .map((item) => {
+                        const pct = Math.round((item.score / item.total) * 100);
+                        return (
+                          <div
+                            key={`${item.type}-${item.id}`}
+                            className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl"
+                          >
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                              item.type === "diagnostic" ? "bg-primary/10" : "bg-accent/10"
+                            }`}>
+                              {item.type === "diagnostic" ? (
+                                <Brain className="w-4 h-4 text-primary" />
+                              ) : (
+                                <Flame className="w-4 h-4 text-accent-foreground" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate">{item.title}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(item.date, "dd MMM yyyy")}
+                                {item.time && ` · ${Math.round(item.time / 60)}min`}
+                                {item.type === "quiz" && " · Quiz"}
+                              </p>
+                            </div>
+                            <Badge
+                              variant={pct >= 70 ? "default" : "secondary"}
+                              className={pct >= 70 ? "bg-secondary text-secondary-foreground" : ""}
+                            >
+                              {pct}%
+                            </Badge>
+                          </div>
+                        );
+                      });
+                  })()}
                 </div>
               </CardContent>
             </Card>
