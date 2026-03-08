@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Menu, X } from "lucide-react";
+import { GraduationCap, Menu, X, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -13,6 +13,30 @@ const navLinks = [
 export const Navbar = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return document.documentElement.classList.contains("dark");
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (dark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [dark]);
+
+  // Initialize from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+      setDark(true);
+    }
+  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
@@ -43,6 +67,15 @@ export const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setDark(!dark)}
+            className="rounded-full"
+            aria-label="Toggle dark mode"
+          >
+            {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </Button>
           <Button variant="ghost" asChild className="hidden sm:inline-flex">
             <Link to="/auth">Login</Link>
           </Button>
