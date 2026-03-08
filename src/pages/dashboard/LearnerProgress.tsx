@@ -404,6 +404,14 @@ const LearnerProgress = () => {
               </Card>
             )}
 
+            {/* Learning Goals */}
+            {user && (
+              <GoalTracker
+                userId={user.id}
+                subjectAverages={subjectAvg}
+                availableSubjects={subjects as string[]}
+              />
+            )}
 
             {/* Recent Tests — compact list, last 5 */}
             <Card className="rounded-2xl shadow-card">
