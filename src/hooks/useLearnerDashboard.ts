@@ -21,6 +21,7 @@ interface RecentDiagnostic {
 export function useLearnerDashboard(userId: string | undefined) {
   const [upcomingSessions, setUpcomingSessions] = useState<UpcomingSession[]>([]);
   const [recentDiagnostics, setRecentDiagnostics] = useState<RecentDiagnostic[]>([]);
+  const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export function useLearnerDashboard(userId: string | undefined) {
     const fetchData = async () => {
       setLoading(true);
       
-      const [sessionsRes, diagnosticsRes] = await Promise.all([
+      const [sessionsRes, diagnosticsRes, quizzesRes, diagnosticDatesRes] = await Promise.all([
         supabase
           .from("session_bookings")
           .select("id, subject, scheduled_at, notes, status, tutor_id")
@@ -48,10 +49,23 @@ export function useLearnerDashboard(userId: string | undefined) {
           .eq("status", "completed")
           .order("completed_at", { ascending: false })
           .limit(3),
+        // Get quiz completion dates for streak
+        supabase
+          .from("quiz_sessions")
+          .select("completed_at")
+          .eq("user_id", userId)
+          .eq("status", "completed")
+          .not("completed_at", "is", null),
+        // Get diagnostic completion dates for streak
+        supabase
+          .from("diagnostic_attempts")
+          .select("completed_at")
+          .eq("user_id", userId)
+          .eq("status", "completed")
+          .not("completed_at", "is", null),
       ]);
 
       if (sessionsRes.data) {
-        // Fetch tutor names
         const tutorIds = [...new Set(sessionsRes.data.map(s => s.tutor_id))];
         const { data: tutorProfiles } = await supabase
           .from("profiles")
@@ -86,11 +100,33 @@ export function useLearnerDashboard(userId: string | undefined) {
         );
       }
 
+      // Calculate streak from activity dates
+      const activityDates = new Set<string>();
+      for (const q of quizzesRes.data || []) {
+        if (q.completed_at) activityDates.add(new Date(q.completed_at).toDateString());
+      }
+      for (const d of diagnosticDatesRes.data || []) {
+        if (d.completed_at) activityDates.add(new Date(d.completed_at).toDateString());
+      }
+      
+      let currentStreak = 0;
+      const today = new Date();
+      for (let i = 0; i < 365; i++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(today.getDate() - i);
+        if (activityDates.has(checkDate.toDateString())) {
+          currentStreak++;
+        } else if (i > 0) {
+          break;
+        }
+      }
+      setStreak(currentStreak);
+
       setLoading(false);
     };
 
     fetchData();
   }, [userId]);
 
-  return { upcomingSessions, recentDiagnostics, loading };
+  return { upcomingSessions, recentDiagnostics, streak, loading };
 }

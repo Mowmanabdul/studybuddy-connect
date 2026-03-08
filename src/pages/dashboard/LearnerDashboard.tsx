@@ -19,18 +19,34 @@ import {
   BookOpen,
   LogOut,
   Bell,
-  Zap
+  Zap,
+  Flame
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
 import { useLearnerDashboard } from "@/hooks/useLearnerDashboard";
 import { format, formatDistanceToNow } from "date-fns";
+import { motion } from "framer-motion";
+
+const motivationalQuotes = [
+  { text: "Education is the most powerful weapon which you can use to change the world.", author: "Nelson Mandela" },
+  { text: "It always seems impossible until it's done.", author: "Nelson Mandela" },
+  { text: "The beautiful thing about learning is that no one can take it away from you.", author: "B.B. King" },
+  { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+  { text: "Don't let what you cannot do interfere with what you can do.", author: "John Wooden" },
+  { text: "Sharp sharp! Every problem you solve makes you stronger for the next one.", author: "Thuto AI" },
+];
+
+const getDailyQuote = () => {
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+  return motivationalQuotes[dayOfYear % motivationalQuotes.length];
+};
 
 const LearnerDashboard = () => {
   const { profile, user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-  const { upcomingSessions, recentDiagnostics, loading } = useLearnerDashboard(user?.id);
+  const { upcomingSessions, recentDiagnostics, streak, loading } = useLearnerDashboard(user?.id);
   
   const handleLogout = async () => {
     await signOut();
@@ -38,6 +54,10 @@ const LearnerDashboard = () => {
   
   const displayName = profile ? `${profile.first_name}` : "Learner";
   const gradeDisplay = profile?.grade ? `Grade ${profile.grade}` : "";
+  const quote = getDailyQuote();
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   
   return (
     <div className="min-h-screen bg-muted/30">
@@ -65,7 +85,7 @@ const LearnerDashboard = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden sm:block text-left">
-                    <p className="text-sm font-semibold">Welcome, {displayName}</p>
+                    <p className="text-sm font-semibold">{displayName}</p>
                     <p className="text-xs text-muted-foreground">{gradeDisplay}</p>
                   </div>
                 </button>
@@ -82,58 +102,73 @@ const LearnerDashboard = () => {
       </header>
       
       <main className="container mx-auto px-4 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold mb-2">Welcome back, {displayName}! 👋</h1>
-          <p className="text-muted-foreground">Ready to continue your learning journey?</p>
+        {/* Welcome + Streak Row */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="font-display text-3xl font-bold mb-1">{greeting}, {displayName}! 👋</h1>
+            <p className="text-muted-foreground">Ready to continue your learning journey?</p>
+          </div>
+          
+          {/* Streak Badge */}
+          <motion.div
+            className="flex items-center gap-3 bg-card rounded-2xl px-5 py-3 shadow-card border"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.3, type: "spring" }}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${streak > 0 ? "bg-coral/20" : "bg-muted"}`}>
+              <Flame className={`w-5 h-5 ${streak > 0 ? "text-coral" : "text-muted-foreground"}`} />
+            </div>
+            <div>
+              <p className="font-display font-bold text-lg leading-tight">
+                {streak > 0 ? `${streak} day${streak > 1 ? "s" : ""}` : "No streak"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {streak > 0 ? "Study streak 🔥" : "Complete a quiz to start!"}
+              </p>
+            </div>
+          </motion.div>
         </div>
+
+        {/* Daily Motivation */}
+        <motion.div 
+          className="mb-8 bg-gradient-to-r from-teal/10 via-secondary/5 to-lavender/10 rounded-2xl p-4 border border-secondary/20"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <p className="text-sm italic text-foreground/80">
+            "{quote.text}"
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">— {quote.author}</p>
+        </motion.div>
         
         {/* Quick Actions */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-          <button 
-            onClick={() => navigate("/dashboard/diagnostic")}
-            className="bg-gradient-hero text-primary-foreground rounded-2xl p-6 text-left hover:shadow-glow-coral transition-all hover:-translate-y-1"
-          >
-            <Brain className="w-8 h-8 mb-3" />
-            <h3 className="font-semibold mb-1">Take Diagnostic</h3>
-            <p className="text-sm text-primary-foreground/80">Test your knowledge</p>
-          </button>
-          
-          <button 
-            onClick={() => navigate("/dashboard/quiz")}
-            className="bg-card rounded-2xl p-6 text-left shadow-card hover:shadow-lg transition-all hover:-translate-y-1 border"
-          >
-            <Zap className="w-8 h-8 mb-3 text-primary" />
-            <h3 className="font-semibold mb-1">Quick Quiz</h3>
-            <p className="text-sm text-muted-foreground">Adaptive practice</p>
-          </button>
-          
-          <button 
-            onClick={() => navigate("/dashboard/book-session")}
-            className="bg-card rounded-2xl p-6 text-left shadow-card hover:shadow-lg transition-all hover:-translate-y-1 border"
-          >
-            <Calendar className="w-8 h-8 mb-3 text-teal" />
-            <h3 className="font-semibold mb-1">Book Session</h3>
-            <p className="text-sm text-muted-foreground">Schedule tutoring</p>
-          </button>
-          
-          <button 
-            onClick={() => navigate("/dashboard/homework")}
-            className="bg-card rounded-2xl p-6 text-left shadow-card hover:shadow-lg transition-all hover:-translate-y-1 border"
-          >
-            <MessageCircle className="w-8 h-8 mb-3 text-coral" />
-            <h3 className="font-semibold mb-1">AI Homework Help</h3>
-            <p className="text-sm text-muted-foreground">Get instant guidance</p>
-          </button>
-          
-          <button 
-            onClick={() => navigate("/dashboard/progress")}
-            className="bg-card rounded-2xl p-6 text-left shadow-card hover:shadow-lg transition-all hover:-translate-y-1 border"
-          >
-            <BarChart3 className="w-8 h-8 mb-3 text-sunshine" />
-            <h3 className="font-semibold mb-1">View Progress</h3>
-            <p className="text-sm text-muted-foreground">Track your growth</p>
-          </button>
+          {[
+            { icon: Brain, label: "Take Diagnostic", desc: "Test your knowledge", route: "/dashboard/diagnostic", gradient: true },
+            { icon: Zap, label: "Quick Quiz", desc: "Adaptive practice", route: "/dashboard/quiz", color: "text-primary" },
+            { icon: Calendar, label: "Book Session", desc: "Schedule tutoring", route: "/dashboard/book-session", color: "text-teal" },
+            { icon: MessageCircle, label: "AI Homework Help", desc: "Get instant guidance", route: "/dashboard/homework", color: "text-coral" },
+            { icon: BarChart3, label: "View Progress", desc: "Track your growth", route: "/dashboard/progress", color: "text-sunshine" },
+          ].map((action, i) => (
+            <motion.button 
+              key={action.label}
+              onClick={() => navigate(action.route)}
+              className={`rounded-2xl p-6 text-left transition-all hover:-translate-y-1 ${
+                action.gradient 
+                  ? "bg-gradient-hero text-primary-foreground hover:shadow-glow-coral" 
+                  : "bg-card shadow-card hover:shadow-lg border"
+              }`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + i * 0.05 }}
+            >
+              <action.icon className={`w-8 h-8 mb-3 ${action.gradient ? "" : action.color}`} />
+              <h3 className="font-semibold mb-1">{action.label}</h3>
+              <p className={`text-sm ${action.gradient ? "text-primary-foreground/80" : "text-muted-foreground"}`}>{action.desc}</p>
+            </motion.button>
+          ))}
         </div>
         
         <div className="grid lg:grid-cols-3 gap-8">
@@ -228,7 +263,7 @@ const LearnerDashboard = () => {
                         </div>
                         <div className="w-full bg-muted rounded-full h-2 mb-2">
                           <div 
-                            className={`h-2 rounded-full ${
+                            className={`h-2 rounded-full transition-all duration-700 ${
                               percentage >= 70 ? "bg-teal" : "bg-coral"
                             }`}
                             style={{ width: `${percentage}%` }}
