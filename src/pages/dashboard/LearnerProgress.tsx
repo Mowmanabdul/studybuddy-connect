@@ -32,6 +32,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import GoalTracker from "@/components/progress/GoalTracker";
 
 interface AttemptWithTest {
   id: string;
