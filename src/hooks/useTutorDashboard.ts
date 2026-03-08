@@ -13,6 +13,7 @@ interface TutorSession {
   status: string;
   notes: string | null;
   meeting_link: string | null;
+  tutor_notes: string | null;
 }
 
 interface TutorStats {
