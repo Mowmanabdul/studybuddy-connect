@@ -19,7 +19,6 @@ import {
   BookOpen,
   LogOut,
   Zap,
-  Zap,
   Flame,
   FileText,
 } from "lucide-react";
