@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import { useLearnerDashboard } from "@/hooks/useLearnerDashboard";
 import { format, formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
