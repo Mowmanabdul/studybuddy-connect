@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { toast } from "sonner";
+import { createBookingNotification } from "./useNotifications";
 
 export interface TutorAvailability {
   id: string;
@@ -234,6 +235,17 @@ export function useSessionBooking() {
       });
 
       if (error) throw error;
+
+      // Get learner name for notification
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("first_name, last_name")
+        .eq("user_id", user.id)
+        .single();
+      
+      const learnerName = profile ? `${profile.first_name} ${profile.last_name}` : "A learner";
+      await createBookingNotification(tutorId, learnerName, subject, scheduledAt.toISOString());
+
       toast.success("Session booked successfully! Waiting for tutor confirmation.");
       await fetchMySessions();
       return true;
