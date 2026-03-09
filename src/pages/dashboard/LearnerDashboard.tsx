@@ -18,7 +18,7 @@ import {
   Sparkles,
   BookOpen,
   LogOut,
-  Bell,
+  Zap,
   Zap,
   Flame,
   FileText,
