@@ -74,9 +74,7 @@ const LearnerDashboard = () => {
           </Link>
           
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon">
-              <Bell className="w-5 h-5" />
-            </Button>
+            <NotificationBell />
             <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
               <DialogTrigger asChild>
                 <button className="flex items-center gap-3 hover:bg-muted rounded-lg px-2 py-1 transition-colors">
