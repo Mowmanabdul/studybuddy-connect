@@ -18,13 +18,13 @@ import {
   Sparkles,
   BookOpen,
   LogOut,
-  Bell,
   Zap,
   Flame,
   FileText,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import { useLearnerDashboard } from "@/hooks/useLearnerDashboard";
 import { format, formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
@@ -73,9 +73,7 @@ const LearnerDashboard = () => {
           </Link>
           
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon">
-              <Bell className="w-5 h-5" />
-            </Button>
+            <NotificationBell />
             <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
               <DialogTrigger asChild>
                 <button className="flex items-center gap-3 hover:bg-muted rounded-lg px-2 py-1 transition-colors">
