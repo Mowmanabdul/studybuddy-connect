@@ -15,8 +15,8 @@ import {
   Users,
   ChevronRight,
   LogOut,
-  Bell,
 } from "lucide-react";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
 import { LearnerDiagnostics } from "@/components/tutor/LearnerDiagnostics";
