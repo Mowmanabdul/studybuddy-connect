@@ -22,6 +22,11 @@ import TutorAvailability from "./pages/dashboard/TutorAvailability";
 import LearnerProgress from "./pages/dashboard/LearnerProgress";
 import AdaptiveQuiz from "./pages/dashboard/AdaptiveQuiz";
 import MyLearners from "./pages/dashboard/MyLearners";
+import { AdminLayout } from "./components/admin/AdminLayout";
+import AdminOverview from "./pages/admin/AdminOverview";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminSessions from "./pages/admin/AdminSessions";
+import AdminContent from "./pages/admin/AdminContent";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -110,6 +115,20 @@ const AnimatedRoutes = () => {
             </ProtectedRoute>
           }
         />
+        {/* Admin routes */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdminOverview />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="sessions" element={<AdminSessions />} />
+          <Route path="content" element={<AdminContent />} />
+        </Route>
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>

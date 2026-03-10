@@ -36,6 +36,8 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
       return <Navigate to="/dashboard/learner" replace />;
     } else if (role === "tutor") {
       return <Navigate to="/dashboard/tutor" replace />;
+    } else if (role === "admin") {
+      return <Navigate to="/admin" replace />;
     } else {
       return <Navigate to="/" replace />;
     }
