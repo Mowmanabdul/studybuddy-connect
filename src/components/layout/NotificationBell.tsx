@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, Check, CheckCheck, X, Calendar } from "lucide-react";
+import { Bell, Check, CheckCheck, X, Calendar, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -79,10 +79,20 @@ export function NotificationBell() {
                         "w-8 h-8 rounded-full flex items-center justify-center",
                         notif.type === "booking"
                           ? "bg-primary/10 text-primary"
+                          : notif.type === "confirmation"
+                          ? "bg-green-500/10 text-green-600"
+                          : notif.type === "cancellation"
+                          ? "bg-destructive/10 text-destructive"
                           : "bg-muted text-muted-foreground"
                       )}
                     >
-                      <Calendar className="w-4 h-4" />
+                      {notif.type === "confirmation" ? (
+                        <CheckCircle className="w-4 h-4" />
+                      ) : notif.type === "cancellation" ? (
+                        <XCircle className="w-4 h-4" />
+                      ) : (
+                        <Calendar className="w-4 h-4" />
+                      )}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">

@@ -272,6 +272,37 @@ export function useSessionBooking() {
         .eq("id", sessionId);
 
       if (error) throw error;
+
+      // Notify the learner about the status change
+      const session = sessions.find(s => s.id === sessionId);
+      if (session && user) {
+        const { data: tutorProfile } = await supabase
+          .from("profiles")
+          .select("first_name, last_name")
+          .eq("user_id", user.id)
+          .single();
+
+        const tutorName = tutorProfile ? `${tutorProfile.first_name} ${tutorProfile.last_name}` : "Your tutor";
+        const formattedDate = new Date(session.scheduled_at).toLocaleDateString("en-ZA", {
+          weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+        });
+
+        const notifTitle = status === "confirmed" ? "Session Confirmed" : status === "cancelled" ? "Session Cancelled" : `Session ${status}`;
+        const notifMessage = status === "confirmed"
+          ? `${tutorName} confirmed your ${session.subject} session for ${formattedDate}`
+          : status === "cancelled"
+          ? `${tutorName} cancelled your ${session.subject} session for ${formattedDate}`
+          : `${tutorName} updated your ${session.subject} session to ${status}`;
+
+        await supabase.from("notifications").insert({
+          user_id: session.learner_id,
+          type: status === "confirmed" ? "confirmation" : status === "cancelled" ? "cancellation" : "info",
+          title: notifTitle,
+          message: notifMessage,
+          metadata: { session_id: sessionId, subject: session.subject, scheduled_at: session.scheduled_at },
+        });
+      }
+
       toast.success(`Session ${status}`);
       await fetchMySessions();
       return true;
