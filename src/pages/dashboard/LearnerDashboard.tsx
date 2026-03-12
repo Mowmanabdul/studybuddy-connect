@@ -170,48 +170,53 @@ const LearnerDashboard = () => {
           ))}
         </div>
         
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Upcoming Sessions */}
-          <div className="lg:col-span-2">
+        {/* Main Content Grid */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* LEFT COLUMN — Primary content (2/3 width) */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Upcoming Sessions */}
             <div className="bg-card rounded-2xl shadow-card p-6 border">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-display text-xl font-bold">Upcoming Sessions</h2>
-                <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard/book-session")}>
-                  View All <ChevronRight className="w-4 h-4" />
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-teal/15 flex items-center justify-center">
+                    <Calendar className="w-4.5 h-4.5 text-teal" />
+                  </div>
+                  <h2 className="font-display text-lg font-bold">Upcoming Sessions</h2>
+                </div>
+                <Button variant="ghost" size="sm" className="text-xs" onClick={() => navigate("/dashboard/book-session")}>
+                  View All <ChevronRight className="w-3.5 h-3.5 ml-1" />
                 </Button>
               </div>
               
               {loading ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {[1, 2].map(i => (
-                    <div key={i} className="h-20 bg-muted/50 rounded-xl animate-pulse" />
+                    <div key={i} className="h-[72px] bg-muted/50 rounded-xl animate-pulse" />
                   ))}
                 </div>
               ) : upcomingSessions.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {upcomingSessions.map((session) => (
                     <div 
                       key={session.id}
-                      className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl hover:bg-muted transition-colors"
+                      className="flex items-center gap-4 p-4 bg-muted/40 rounded-xl hover:bg-muted/70 transition-colors"
                     >
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        session.subject === "Mathematics" ? "bg-coral/20" : "bg-teal/20"
+                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                        session.subject === "Mathematics" ? "bg-coral/15" : "bg-teal/15"
                       }`}>
-                        <BookOpen className={`w-6 h-6 ${
+                        <BookOpen className={`w-5 h-5 ${
                           session.subject === "Mathematics" ? "text-coral" : "text-teal"
                         }`} />
                       </div>
-                      
-                      <div className="flex-1">
-                        <h4 className="font-semibold">{session.subject}</h4>
-                        <p className="text-sm text-muted-foreground">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm">{session.subject}</h4>
+                        <p className="text-xs text-muted-foreground truncate">
                           with {session.tutor_name}
                         </p>
                       </div>
-                      
-                      <div className="text-right">
-                        <p className="font-semibold">{format(new Date(session.scheduled_at), "EEE, dd MMM")}</p>
-                        <p className="text-sm text-muted-foreground flex items-center justify-end gap-1">
+                      <div className="text-right shrink-0">
+                        <p className="font-semibold text-sm">{format(new Date(session.scheduled_at), "EEE, dd MMM")}</p>
+                        <p className="text-xs text-muted-foreground flex items-center justify-end gap-1">
                           <Clock className="w-3 h-3" /> {format(new Date(session.scheduled_at), "HH:mm")}
                         </p>
                       </div>
@@ -220,79 +225,84 @@ const LearnerDashboard = () => {
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>No upcoming sessions</p>
-                  <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/dashboard/book-session")}>
+                  <Calendar className="w-10 h-10 mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">No upcoming sessions</p>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={() => navigate("/dashboard/book-session")}>
                     Book a Session
                   </Button>
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Completed Sessions with Tutor Notes */}
-          <div className="lg:col-span-2">
+            {/* Session Notes from Tutor */}
             <div className="bg-card rounded-2xl shadow-card p-6 border">
-              <h2 className="font-display text-xl font-bold mb-6">Session Notes from Tutor</h2>
+              <div className="flex items-center gap-2.5 mb-5">
+                <div className="w-9 h-9 rounded-xl bg-lavender/20 flex items-center justify-center">
+                  <FileText className="w-4.5 h-4.5 text-lavender" />
+                </div>
+                <h2 className="font-display text-lg font-bold">Session Notes from Tutor</h2>
+              </div>
               
               {loading ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {[1, 2].map(i => (
-                    <div key={i} className="h-20 bg-muted/50 rounded-xl animate-pulse" />
+                    <div key={i} className="h-24 bg-muted/50 rounded-xl animate-pulse" />
                   ))}
                 </div>
               ) : completedSessions.filter(s => s.tutor_notes).length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {completedSessions.filter(s => s.tutor_notes).map((session) => (
-                    <div key={session.id} className="p-4 bg-muted/50 rounded-xl space-y-2">
+                    <div key={session.id} className="p-4 bg-muted/40 rounded-xl space-y-2.5">
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                          session.subject === "Mathematics" ? "bg-coral/20" : "bg-teal/20"
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                          session.subject === "Mathematics" ? "bg-coral/15" : "bg-teal/15"
                         }`}>
-                          <BookOpen className={`w-5 h-5 ${
+                          <BookOpen className={`w-4 h-4 ${
                             session.subject === "Mathematics" ? "text-coral" : "text-teal"
                           }`} />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <h4 className="font-semibold text-sm">{session.subject}</h4>
                           <p className="text-xs text-muted-foreground">
                             with {session.tutor_name} · {format(new Date(session.scheduled_at), "dd MMM yyyy")}
                           </p>
                         </div>
                       </div>
-                      <div className="bg-card rounded-lg p-3 border border-border/50">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <FileText className="w-3.5 h-3.5 text-primary" />
-                          <span className="text-xs font-semibold text-primary">Tutor's Notes</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{session.tutor_notes}</p>
+                      <div className="bg-card rounded-lg p-3 border border-border/50 ml-12">
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{session.tutor_notes}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-6 text-muted-foreground">
-                  <FileText className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No session notes from your tutor yet</p>
+                  <FileText className="w-10 h-10 mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">No session notes yet</p>
                 </div>
               )}
             </div>
           </div>
-          
-          {/* Recent Diagnostics */}
-          <div>
+
+          {/* RIGHT COLUMN — Sidebar content (1/3 width) */}
+          <div className="space-y-6">
+            {/* Recent Diagnostics */}
             <div className="bg-card rounded-2xl shadow-card p-6 border">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-display text-xl font-bold">Diagnostics</h2>
-                <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard/diagnostic")}>
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-coral/15 flex items-center justify-center">
+                    <Brain className="w-4.5 h-4.5 text-coral" />
+                  </div>
+                  <h2 className="font-display text-lg font-bold">Diagnostics</h2>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/dashboard/diagnostic")}>
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {loading ? (
                   [1, 2].map(i => (
-                    <div key={i} className="h-24 bg-muted/50 rounded-xl animate-pulse" />
+                    <div key={i} className="h-20 bg-muted/50 rounded-xl animate-pulse" />
                   ))
                 ) : recentDiagnostics.length > 0 ? (
                   recentDiagnostics.map((diagnostic) => {
@@ -300,7 +310,7 @@ const LearnerDashboard = () => {
                       ? Math.round((diagnostic.score / diagnostic.total_questions) * 100) 
                       : 0;
                     return (
-                      <div key={diagnostic.id} className="p-4 bg-muted/50 rounded-xl">
+                      <div key={diagnostic.id} className="p-4 bg-muted/40 rounded-xl">
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="font-semibold text-sm">{diagnostic.subject}</h4>
                           <span className={`text-sm font-bold ${
@@ -309,9 +319,9 @@ const LearnerDashboard = () => {
                             {percentage}%
                           </span>
                         </div>
-                        <div className="w-full bg-muted rounded-full h-2 mb-2">
+                        <div className="w-full bg-muted rounded-full h-1.5 mb-2">
                           <div 
-                            className={`h-2 rounded-full transition-all duration-700 ${
+                            className={`h-1.5 rounded-full transition-all duration-700 ${
                               percentage >= 70 ? "bg-teal" : "bg-coral"
                             }`}
                             style={{ width: `${percentage}%` }}
@@ -333,33 +343,55 @@ const LearnerDashboard = () => {
                 
                 <Button 
                   variant="outline" 
-                  className="w-full"
+                  className="w-full text-sm"
                   onClick={() => navigate("/dashboard/diagnostic")}
                 >
                   <Brain className="w-4 h-4 mr-2" />
-                  Take New Diagnostic
+                  Take Diagnostic
                 </Button>
               </div>
             </div>
-          </div>
-        </div>
-        
-        {/* AI Homework Helper Teaser */}
-        <div className="mt-8">
-          <div className="bg-gradient-to-r from-coral/10 via-sunshine/10 to-teal/10 rounded-2xl p-6 border">
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="w-16 h-16 bg-gradient-hero rounded-2xl flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-8 h-8 text-primary-foreground" />
+
+            {/* AI Homework Helper CTA */}
+            <div className="bg-gradient-to-br from-coral/10 via-sunshine/5 to-teal/10 rounded-2xl p-6 border border-primary/10">
+              <div className="w-12 h-12 bg-gradient-hero rounded-xl flex items-center justify-center mb-4">
+                <Sparkles className="w-6 h-6 text-primary-foreground" />
               </div>
-              <div className="flex-1 text-center md:text-left">
-                <h3 className="font-display text-xl font-bold mb-1">AI Homework Helper</h3>
-                <p className="text-muted-foreground">
-                  Stuck on a problem? Get step-by-step guidance without the answer being revealed.
-                </p>
-              </div>
-              <Button variant="hero" onClick={() => navigate("/dashboard/homework")}>
+              <h3 className="font-display text-lg font-bold mb-1">AI Homework Helper</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Stuck on a problem? Get step-by-step guidance from your AI tutor.
+              </p>
+              <Button variant="hero" className="w-full" onClick={() => navigate("/dashboard/homework")}>
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Ask a Question
+              </Button>
+            </div>
+
+            {/* Progress Snapshot */}
+            <div className="bg-card rounded-2xl shadow-card p-6 border">
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-9 h-9 rounded-xl bg-sunshine/15 flex items-center justify-center">
+                  <BarChart3 className="w-4.5 h-4.5 text-sunshine" />
+                </div>
+                <h2 className="font-display text-lg font-bold">Progress</h2>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-muted/40 rounded-xl p-3 text-center">
+                  <p className="font-display text-2xl font-bold text-primary">{recentDiagnostics.length}</p>
+                  <p className="text-xs text-muted-foreground">Tests Taken</p>
+                </div>
+                <div className="bg-muted/40 rounded-xl p-3 text-center">
+                  <p className="font-display text-2xl font-bold text-teal">{upcomingSessions.length + completedSessions.length}</p>
+                  <p className="text-xs text-muted-foreground">Sessions</p>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full text-sm"
+                onClick={() => navigate("/dashboard/progress")}
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                View Full Progress
               </Button>
             </div>
           </div>
