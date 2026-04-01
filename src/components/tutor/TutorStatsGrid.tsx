@@ -24,7 +24,14 @@ interface TutorStatsGridProps {
   loading: boolean;
 }
 
-const HOURLY_RATE = 250; // ZAR per hour — configurable later
+const HOURLY_RATE = 250;
+
+const colorMap: Record<string, { bg: string; text: string }> = {
+  coral: { bg: "bg-coral/20", text: "text-coral" },
+  teal: { bg: "bg-teal/20", text: "text-teal" },
+  sunshine: { bg: "bg-sunshine/20", text: "text-sunshine" },
+  lavender: { bg: "bg-lavender/20", text: "text-lavender" },
+};
 
 export function TutorStatsGrid({ stats, loading }: TutorStatsGridProps) {
   const estimatedEarnings = stats.totalHours * HOURLY_RATE;
@@ -36,12 +43,7 @@ export function TutorStatsGrid({ stats, loading }: TutorStatsGridProps) {
     { icon: Clock, label: "Upcoming", value: stats.upcomingCount, color: "lavender" },
     { icon: Timer, label: "Hours Tutored", value: stats.totalHours, color: "teal" },
     { icon: Users, label: "Learners", value: stats.uniqueLearners, color: "coral" },
-    {
-      icon: Banknote,
-      label: "Est. Earnings",
-      value: `R${estimatedEarnings.toLocaleString()}`,
-      color: "sunshine",
-    },
+    { icon: Banknote, label: "Est. Earnings", value: `R${estimatedEarnings.toLocaleString()}`, color: "sunshine" },
   ];
 
   if (loading) {
@@ -56,27 +58,28 @@ export function TutorStatsGrid({ stats, loading }: TutorStatsGridProps) {
 
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-7 gap-4 mb-8">
-      {statItems.map((stat, i) => (
-        <motion.div
-          key={stat.label}
-          className="bg-card rounded-2xl p-5 shadow-card border"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.05 }}
-        >
-          <div className="flex items-center gap-3">
-            <div
-              className={`w-10 h-10 bg-${stat.color}/20 rounded-xl flex items-center justify-center`}
-            >
-              <stat.icon className={`w-5 h-5 text-${stat.color}`} />
+      {statItems.map((stat, i) => {
+        const colors = colorMap[stat.color] || colorMap.coral;
+        return (
+          <motion.div
+            key={stat.label}
+            className="bg-card rounded-2xl p-5 shadow-card border"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 ${colors.bg} rounded-xl flex items-center justify-center`}>
+                <stat.icon className={`w-5 h-5 ${colors.text}`} />
+              </div>
+              <div>
+                <p className="text-2xl font-bold leading-tight">{stat.value}</p>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-bold leading-tight">{stat.value}</p>
-              <p className="text-xs text-muted-foreground">{stat.label}</p>
-            </div>
-          </div>
-        </motion.div>
-      ))}
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
