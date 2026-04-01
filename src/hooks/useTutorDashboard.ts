@@ -193,7 +193,7 @@ export const useTutorDashboard = (userId: string | undefined) => {
   const saveTutorNotes = async (sessionId: string, notes: string) => {
     const { error } = await supabase
       .from("session_bookings")
-      .update({ tutor_notes: notes } as any)
+      .update({ tutor_notes: notes })
       .eq("id", sessionId);
     if (error) {
       toast.error("Failed to save session notes");

@@ -1,37 +1,21 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  GraduationCap, 
-  Calendar,
-  Users,
-  ChevronRight,
-  LogOut,
-} from "lucide-react";
-import { NotificationBell } from "@/components/layout/NotificationBell";
+import { Calendar, Users, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { ProfileEditor } from "@/components/profile/ProfileEditor";
+import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { LearnerDiagnostics } from "@/components/tutor/LearnerDiagnostics";
 import { TutorStatsGrid } from "@/components/tutor/TutorStatsGrid";
 import { TutorSessionCard } from "@/components/tutor/TutorSessionCard";
 import { WeekAtGlance } from "@/components/tutor/WeekAtGlance";
 import { useTutorDashboard } from "@/hooks/useTutorDashboard";
 import { format, isToday } from "date-fns";
-import { motion } from "framer-motion";
 
 const TutorDashboard = () => {
   const { profile, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-  
+
   const {
     upcomingSessions,
     recentSessions,
@@ -43,64 +27,31 @@ const TutorDashboard = () => {
     completeSession,
     saveTutorNotes,
   } = useTutorDashboard(user?.id);
-  
+
   const displayName = profile ? `${profile.first_name} ${profile.last_name}` : "Tutor";
   const shortName = profile?.first_name || "Tutor";
+  const initials = profile ? `${profile.first_name[0]}${profile.last_name[0]}` : "??";
   const pendingCount = upcomingSessions.filter((s) => s.status === "pending").length;
   const todaySessions = upcomingSessions.filter((s) => isToday(new Date(s.scheduled_at)));
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
-  // Combine all sessions for the week-at-a-glance
   const allSessions = [...upcomingSessions, ...recentSessions];
-  
+
   return (
     <div className="min-h-screen bg-muted/30">
-      {/* Header */}
-      <header className="bg-card border-b sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-hero rounded-xl flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <span className="font-display font-bold text-xl">Thuto AI</span>
-            <span className="text-xs bg-teal/20 text-teal px-2 py-0.5 rounded-full font-medium">Tutor</span>
-          </Link>
-          
-          <div className="flex items-center gap-4">
-            {pendingCount > 0 && (
-              <Badge className="bg-coral text-primary-foreground">{pendingCount} pending</Badge>
-            )}
-            <NotificationBell />
-            <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
-              <DialogTrigger asChild>
-                <button className="flex items-center gap-3 hover:bg-muted rounded-lg px-2 py-1 transition-colors">
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={profile?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-gradient-hero text-primary-foreground">
-                      {profile ? `${profile.first_name[0]}${profile.last_name[0]}` : "??"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="hidden sm:block text-left">
-                    <p className="text-sm font-semibold">{displayName}</p>
-                    <p className="text-xs text-muted-foreground">Tutor</p>
-                  </div>
-                </button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl p-0 overflow-hidden">
-                <ProfileEditor onClose={() => setProfileDialogOpen(false)} />
-              </DialogContent>
-            </Dialog>
-            <Button variant="ghost" size="sm" onClick={() => signOut()}>
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </header>
-      
+      <DashboardHeader
+        displayName={displayName}
+        subtitle="Tutor"
+        avatarUrl={profile?.avatar_url}
+        initials={initials}
+        roleBadge={{ label: "Tutor", color: "bg-teal/20 text-teal" }}
+        pendingBadge={pendingCount > 0 ? `${pendingCount} pending` : undefined}
+        onLogout={signOut}
+      />
+
       <main className="container mx-auto px-4 py-8">
-        {/* Welcome */}
         <div className="mb-8">
           <h1 className="font-display text-3xl font-bold mb-2">{greeting}, {shortName}! 👋</h1>
           <p className="text-muted-foreground">
@@ -111,12 +62,10 @@ const TutorDashboard = () => {
                 : "No sessions scheduled for today"}
           </p>
         </div>
-        
-        {/* Stats */}
+
         <TutorStatsGrid stats={stats} loading={loading} />
-        
+
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Upcoming Sessions */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-card rounded-2xl shadow-card p-6 border">
               <div className="flex items-center justify-between mb-6">
@@ -125,7 +74,7 @@ const TutorDashboard = () => {
                   Manage <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
-              
+
               {loading ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map((i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
@@ -156,10 +105,9 @@ const TutorDashboard = () => {
               )}
             </div>
 
-            {/* Recent Completed Sessions */}
             <div className="bg-card rounded-2xl shadow-card p-6 border">
               <h2 className="font-display text-xl font-bold mb-6">Recent Sessions</h2>
-              
+
               {loading ? (
                 <div className="space-y-4">
                   {[1, 2].map((i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
@@ -180,16 +128,11 @@ const TutorDashboard = () => {
               )}
             </div>
           </div>
-          
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Week at a Glance */}
-            <WeekAtGlance sessions={allSessions} loading={loading} />
 
-            {/* Learner Diagnostic Results */}
+          <div className="space-y-6">
+            <WeekAtGlance sessions={allSessions} loading={loading} />
             <LearnerDiagnostics />
 
-            {/* Quick Actions */}
             <div className="bg-card rounded-2xl shadow-card p-6 border">
               <h2 className="font-display text-lg font-bold mb-4">Quick Actions</h2>
               <div className="space-y-3">
@@ -203,8 +146,7 @@ const TutorDashboard = () => {
                 </Button>
               </div>
             </div>
-            
-            {/* Today's Schedule */}
+
             <div className="bg-gradient-to-br from-coral/10 to-teal/10 rounded-2xl p-6 border">
               <h2 className="font-display text-lg font-bold mb-4">Today's Schedule</h2>
               {loading ? (
