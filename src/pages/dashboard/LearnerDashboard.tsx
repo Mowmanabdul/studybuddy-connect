@@ -38,7 +38,7 @@ const LearnerDashboard = () => {
   const { upcomingSessions, completedSessions, recentDiagnostics, streak, loading } = useLearnerDashboard(user?.id);
 
   const displayName = profile?.first_name || "Learner";
-  const gradeDisplay = profile?.grade ? `Grade ${profile.grade}` : "";
+  const gradeDisplay = profile?.grade ? (profile.grade.toLowerCase().startsWith("grade") ? profile.grade : `Grade ${profile.grade}`) : "";
   const initials = profile ? `${profile.first_name[0]}${profile.last_name[0]}` : "??";
   const quote = getDailyQuote();
 
