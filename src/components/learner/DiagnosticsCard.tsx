@@ -20,7 +20,7 @@ export function DiagnosticsCard({ diagnostics, loading }: DiagnosticsCardProps) 
   const navigate = useNavigate();
 
   return (
-    <div className="bg-card rounded-2xl shadow-card p-6 border">
+    <div className="bg-card rounded-2xl shadow-soft p-6 border">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-coral/15 flex items-center justify-center">
@@ -43,18 +43,21 @@ export function DiagnosticsCard({ diagnostics, loading }: DiagnosticsCardProps) 
             const percentage = diagnostic.total_questions > 0
               ? Math.round((diagnostic.score / diagnostic.total_questions) * 100)
               : 0;
+            const isGood = percentage >= 70;
             return (
               <div key={diagnostic.id} className="p-4 bg-muted/40 rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold text-sm">{diagnostic.subject}</h4>
-                  <span className={`text-sm font-bold ${percentage >= 70 ? "text-teal" : "text-coral"}`}>
+                  <span className={`text-sm font-bold px-2 py-0.5 rounded-full ${
+                    isGood ? "text-teal bg-teal/10" : "text-coral bg-coral/10"
+                  }`}>
                     {percentage}%
                   </span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-1.5 mb-2">
                   <div
                     className={`h-1.5 rounded-full transition-all duration-700 ${
-                      percentage >= 70 ? "bg-teal" : "bg-coral"
+                      isGood ? "bg-teal" : "bg-coral"
                     }`}
                     style={{ width: `${percentage}%` }}
                   />
@@ -68,8 +71,9 @@ export function DiagnosticsCard({ diagnostics, loading }: DiagnosticsCardProps) 
             );
           })
         ) : (
-          <div className="text-center py-4 text-muted-foreground text-sm">
-            <p>No diagnostics completed yet</p>
+          <div className="text-center py-4 text-muted-foreground">
+            <Brain className="w-8 h-8 mx-auto mb-2 opacity-30" />
+            <p className="text-sm">No diagnostics completed yet</p>
           </div>
         )}
 

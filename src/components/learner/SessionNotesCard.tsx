@@ -18,12 +18,12 @@ export function SessionNotesCard({ sessions, loading }: SessionNotesCardProps) {
   const sessionsWithNotes = sessions.filter(s => s.tutor_notes);
 
   return (
-    <div className="bg-card rounded-2xl shadow-card p-6 border">
+    <div className="bg-card rounded-2xl shadow-soft p-6 border">
       <div className="flex items-center gap-2.5 mb-5">
         <div className="w-9 h-9 rounded-xl bg-lavender/20 flex items-center justify-center">
           <FileText className="w-4 h-4 text-lavender" />
         </div>
-        <h2 className="font-display text-lg font-bold">Session Notes from Tutor</h2>
+        <h2 className="font-display text-lg font-bold">Session Notes</h2>
       </div>
 
       {loading ? (
@@ -35,9 +35,12 @@ export function SessionNotesCard({ sessions, loading }: SessionNotesCardProps) {
       ) : sessionsWithNotes.length > 0 ? (
         <div className="space-y-3">
           {sessionsWithNotes.map((session) => (
-            <div key={session.id} className="p-4 bg-muted/40 rounded-xl space-y-2.5">
+            <div
+              key={session.id}
+              className="p-4 bg-muted/40 rounded-xl border-l-[3px] border-l-lavender space-y-2"
+            >
               <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                   session.subject === "Mathematics" ? "bg-coral/15" : "bg-teal/15"
                 }`}>
                   <BookOpen className={`w-4 h-4 ${
@@ -47,22 +50,21 @@ export function SessionNotesCard({ sessions, loading }: SessionNotesCardProps) {
                 <div className="flex-1 min-w-0">
                   <h4 className="font-semibold text-sm">{session.subject}</h4>
                   <p className="text-xs text-muted-foreground">
-                    with {session.tutor_name} · {format(new Date(session.scheduled_at), "dd MMM yyyy")}
+                    {session.tutor_name} · {format(new Date(session.scheduled_at), "dd MMM yyyy")}
                   </p>
                 </div>
               </div>
-              <div className="bg-card rounded-lg p-3 border border-border/50 ml-12">
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                  {session.tutor_notes}
-                </p>
-              </div>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed pl-11">
+                {session.tutor_notes}
+              </p>
             </div>
           ))}
         </div>
       ) : (
         <div className="text-center py-6 text-muted-foreground">
-          <FileText className="w-10 h-10 mx-auto mb-2 opacity-40" />
+          <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
           <p className="text-sm">No session notes yet</p>
+          <p className="text-xs mt-1">Notes will appear here after tutoring sessions</p>
         </div>
       )}
     </div>

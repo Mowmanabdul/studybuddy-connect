@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Twitter, Instagram, Youtube, Music } from "lucide-react";
 
 interface FooterProps {
   minimal?: boolean;
@@ -16,6 +16,13 @@ export const Footer = ({ minimal = false }: FooterProps) => {
     );
   }
 
+  const socials = [
+    { label: "Twitter", href: "#", icon: Twitter },
+    { label: "Instagram", href: "#", icon: Instagram },
+    { label: "TikTok", href: "#", icon: Music },
+    { label: "YouTube", href: "#", icon: Youtube },
+  ];
+
   return (
     <footer className="border-t bg-card py-16">
       <div className="container mx-auto px-4">
@@ -31,21 +38,15 @@ export const Footer = ({ minimal = false }: FooterProps) => {
             <p className="text-muted-foreground text-sm max-w-xs">
               Empowering South African learners with AI-powered tutoring for Maths and Science. Built for CAPS curriculum success.
             </p>
-            {/* Social links */}
-            <div className="flex gap-3 pt-2">
-              {[
-                { label: "Twitter", href: "#", icon: "𝕏" },
-                { label: "Instagram", href: "#", icon: "📷" },
-                { label: "TikTok", href: "#", icon: "🎵" },
-                { label: "YouTube", href: "#", icon: "▶️" },
-              ].map((social) => (
+            <div className="flex gap-2 pt-2">
+              {socials.map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
-                  className="w-9 h-9 bg-muted rounded-lg flex items-center justify-center text-sm hover:bg-primary hover:text-primary-foreground transition-all"
+                  className="w-9 h-9 bg-muted rounded-lg flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-200"
                   aria-label={social.label}
                 >
-                  {social.icon}
+                  <social.icon className="w-4 h-4" />
                 </a>
               ))}
             </div>

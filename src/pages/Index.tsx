@@ -21,7 +21,7 @@ import { AnimatedCounter } from "@/components/layout/AnimatedCounter";
 import { motion } from "framer-motion";
 
 const HeroSection = () => (
-  <section className="relative min-h-screen pt-24 pb-16 overflow-hidden">
+  <section className="relative min-h-[90vh] pt-24 pb-16 overflow-hidden flex items-center">
     <div className="absolute inset-0 -z-10">
       <div className="absolute top-20 left-10 w-72 h-72 bg-coral/20 rounded-full blur-3xl animate-float" />
       <div className="absolute top-40 right-20 w-96 h-96 bg-teal/20 rounded-full blur-3xl animate-float-delayed" />
@@ -376,28 +376,30 @@ const TestimonialsSection = () => (
 );
 
 const CTASection = () => (
-  <section className="py-24">
+  <section className="py-20">
     <div className="container mx-auto px-4">
       <ScrollReveal>
         <div className="relative bg-gradient-hero rounded-3xl p-12 md:p-16 text-center overflow-hidden">
-          <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0">
             <div className="absolute top-0 left-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
             <div className="absolute bottom-0 right-0 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
           </div>
           
-          <h2 className="font-display text-3xl md:text-5xl font-bold text-primary-foreground mb-4">
-            Ready to Ace Your Exams?
-          </h2>
-          <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto mb-8">
-            Join hundreds of South African learners who are already improving their grades with Thuto AI.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button variant="hero-outline" size="xl" asChild>
-              <Link to="/auth?signup=true">
-                Get Started Free
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </Button>
+          <div className="relative z-10">
+            <h2 className="font-display text-3xl md:text-5xl font-bold text-primary-foreground mb-4">
+              Ready to Ace Your Exams?
+            </h2>
+            <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto mb-8">
+              Join hundreds of South African learners who are already improving their grades with Thuto AI.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Button variant="hero-outline" size="xl" asChild>
+                <Link to="/auth?signup=true">
+                  Get Started Free
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </ScrollReveal>
