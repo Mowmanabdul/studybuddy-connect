@@ -19,7 +19,7 @@ export function UpcomingSessionsCard({ sessions, loading }: UpcomingSessionsCard
   const navigate = useNavigate();
 
   return (
-    <div className="bg-card rounded-2xl shadow-card p-6 border">
+    <div className="bg-card rounded-2xl shadow-soft p-6 border">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-teal/15 flex items-center justify-center">
@@ -43,7 +43,7 @@ export function UpcomingSessionsCard({ sessions, loading }: UpcomingSessionsCard
           {sessions.map((session) => (
             <div
               key={session.id}
-              className="flex items-center gap-4 p-4 bg-muted/40 rounded-xl hover:bg-muted/70 transition-colors"
+              className="flex items-center gap-4 p-4 bg-muted/40 rounded-xl hover:bg-muted/60 transition-colors"
             >
               <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
                 session.subject === "Mathematics" ? "bg-coral/15" : "bg-teal/15"
@@ -67,9 +67,10 @@ export function UpcomingSessionsCard({ sessions, loading }: UpcomingSessionsCard
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
-          <Calendar className="w-10 h-10 mx-auto mb-2 opacity-40" />
-          <p className="text-sm">No upcoming sessions</p>
-          <Button variant="outline" size="sm" className="mt-3" onClick={() => navigate("/dashboard/book-session")}>
+          <Calendar className="w-10 h-10 mx-auto mb-2 opacity-30" />
+          <p className="text-sm font-medium">No upcoming sessions</p>
+          <p className="text-xs mt-1 mb-3">Book a session with an expert tutor</p>
+          <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/book-session")}>
             Book a Session
           </Button>
         </div>
