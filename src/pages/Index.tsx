@@ -21,7 +21,7 @@ import { AnimatedCounter } from "@/components/layout/AnimatedCounter";
 import { motion } from "framer-motion";
 
 const HeroSection = () => (
-  <section className="relative min-h-screen pt-24 pb-16 overflow-hidden">
+  <section className="relative min-h-[90vh] pt-24 pb-16 overflow-hidden flex items-center">
     <div className="absolute inset-0 -z-10">
       <div className="absolute top-20 left-10 w-72 h-72 bg-coral/20 rounded-full blur-3xl animate-float" />
       <div className="absolute top-40 right-20 w-96 h-96 bg-teal/20 rounded-full blur-3xl animate-float-delayed" />
