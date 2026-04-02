@@ -37,7 +37,7 @@ export function SessionNotesCard({ sessions, loading }: SessionNotesCardProps) {
           {sessionsWithNotes.map((session) => (
             <div
               key={session.id}
-              className="p-4 bg-muted/40 rounded-xl border-l-3 border-l-lavender space-y-2"
+              className="p-4 bg-muted/40 rounded-xl border-l-[3px] border-l-lavender space-y-2"
             >
               <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
