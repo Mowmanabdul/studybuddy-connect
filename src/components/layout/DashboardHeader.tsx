@@ -63,8 +63,8 @@ export function DashboardHeader({
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden sm:block text-left">
-                  <p className="text-sm font-semibold">{displayName}</p>
-                  {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+                  <p className="text-sm font-semibold leading-tight">{displayName}</p>
+                  {subtitle && <p className="text-xs text-muted-foreground leading-tight">{subtitle}</p>}
                 </div>
               </button>
             </DialogTrigger>
