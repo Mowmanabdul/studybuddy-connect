@@ -1,7 +1,12 @@
 import { cn } from "@/lib/utils";
 import { User, Sparkles, Lightbulb, HelpCircle, Calculator } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import { Button } from "@/components/ui/button";
+import { MermaidDiagram } from "./MermaidDiagram";
+import { CodeBlock } from "./CodeBlock";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -54,13 +59,46 @@ export const ChatMessage = ({ role, content, onFollowUp, showActions = false }: 
               prose-ul:my-3 prose-ul:pl-5 prose-ul:space-y-1.5 prose-li:text-sm prose-li:text-foreground prose-li:leading-relaxed prose-li:marker:text-primary/60
               prose-ol:my-3 prose-ol:pl-5 prose-ol:space-y-1.5
               prose-code:bg-primary/10 prose-code:text-primary prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:text-xs prose-code:font-mono prose-code:font-medium
-              prose-pre:bg-secondary prose-pre:rounded-xl prose-pre:p-4 prose-pre:my-4 prose-pre:overflow-x-auto prose-pre:border prose-pre:border-border/50
+              prose-pre:bg-transparent prose-pre:p-0 prose-pre:my-0
               prose-blockquote:border-l-[3px] prose-blockquote:border-primary/40 prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-lg prose-blockquote:pl-4 prose-blockquote:pr-3 prose-blockquote:py-2.5 prose-blockquote:my-4 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-blockquote:text-sm
               prose-a:text-primary prose-a:underline prose-a:underline-offset-2
               prose-hr:my-5 prose-hr:border-border/50
               [&>*:first-child]:mt-0 [&>*:last-child]:mb-0
-              [&>*+*]:mt-3">
-              <ReactMarkdown>{content}</ReactMarkdown>
+              [&>*+*]:mt-3
+              [&_.katex]:text-foreground [&_.katex-display]:my-4 [&_.katex-display]:overflow-x-auto">
+              <ReactMarkdown
+                remarkPlugins={[remarkMath]}
+                rehypePlugins={[rehypeKatex]}
+                components={{
+                  code({ className, children, ...props }) {
+                    const match = /language-(\w+)/.exec(className || "");
+                    const codeString = String(children).replace(/\n$/, "");
+
+                    // Render mermaid diagrams
+                    if (match?.[1] === "mermaid") {
+                      return <MermaidDiagram chart={codeString} />;
+                    }
+
+                    // Render code blocks with syntax highlighting
+                    if (match) {
+                      return <CodeBlock language={match[1]}>{codeString}</CodeBlock>;
+                    }
+
+                    // Inline code
+                    return (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    );
+                  },
+                  pre({ children }) {
+                    // Let custom code component handle wrapping
+                    return <>{children}</>;
+                  },
+                }}
+              >
+                {content}
+              </ReactMarkdown>
             </div>
           )}
         </div>
