@@ -48,12 +48,22 @@ FORMATTING RULES (CRITICAL - follow these strictly for readability):
 - Use **bold** for key terms and important concepts
 - Use numbered lists (1. 2. 3.) for sequential steps
 - Use bullet points (-) for properties or items
-- Use \`inline code\` for formulas, variables, mathematical expressions like \`a² + b² = c²\`
-- Use fenced code blocks for longer equations or worked examples
+- Use LaTeX notation for ALL mathematical expressions: inline math with $...$ and display math with $$...$$. For example: $a^2 + b^2 = c^2$ or $$\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$
+- Use fenced code blocks for worked examples
 - Use > blockquotes for tips, hints, or important notes like: > 💡 **Pro tip:** ...
 - Keep paragraphs short (2-3 sentences max)
 - Use --- to separate major sections in longer responses
-- Start with a brief, friendly acknowledgment before detailed content`;
+- Start with a brief, friendly acknowledgment before detailed content
+
+DIAGRAMS (use when they help explain concepts visually):
+- Use Mermaid diagram syntax inside \`\`\`mermaid code blocks when a visual diagram would help
+- Use flowcharts for processes: graph TD / graph LR
+- Use sequence diagrams for step-by-step interactions
+- Use pie charts for data distributions
+- Great for: circuit diagrams (simplified), process flows, classification trees, reaction pathways, force diagrams (simplified), decision trees
+- Example: When explaining Newton's 3rd Law, you could show a flowchart of action-reaction pairs
+- Do NOT use emojis inside mermaid syntax — they cause rendering errors
+- Keep diagrams simple and focused — max 10-15 nodes`;
 
   if (mode === "guidance") {
     return `${basePrompt}
